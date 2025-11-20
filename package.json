@@ -1,0 +1,25 @@
+{
+  "name": "project",
+  "version": "1.0.0",
+  "description": "CleanEats NYC is a web application that allows users to explore New York City restaurants based on official Department of Health inspection data.",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "seed": "node tasks/seed.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NoahSpina/CleanEatsNYC.git"
+  },
+  "author": "Noah Spina",
+  "license": "ISC",
+  "homepage": "https://github.com/NoahSpina/CleanEatsNYC#readme",
+  "dependencies": {
+    "csv-parser": "^3.2.0",
+    "express": "^5.1.0",
+    "express-handlebars": "^8.0.3",
+    "handlebars": "^4.7.8",
+    "mongodb": "^7.0.0"
+  }
+}
