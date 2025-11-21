@@ -62,5 +62,20 @@ export function normalizeString(str) {
 
     Returns: The normalized string
     */
-  return typeof str === "string" ? str.trim() : "";
+  return typeof str === "string" ? str.trim().toLowerCase() : "";
+}
+
+export function checkId(id) {
+  /*
+    Inputs:
+      - id: the id to be validated
+    
+    Purpose: To validate that a id is a string and a valid ObjectId
+
+    Returns: The trimmed id if valid
+  */
+  if (!id) throw new Error('You must provide an id to search for');
+  id = checkAndTrimString(id, 'Id');
+  if (!ObjectId.isValid(id)) throw new Error(`${id} is not a valid ObjectId`)
+  return id;
 }
