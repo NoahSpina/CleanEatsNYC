@@ -1,0 +1,148 @@
+/* Reset */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar */
+.navbar {
+  background: #2c3e50;
+  color: #fff;
+  padding: 1rem 0;
+}
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nav-brand, .nav-link { color: #fff; text-decoration: none; }
+.nav-links { display: flex; gap: 1.5rem; }
+.nav-link:hover { opacity: .8; }
+.nav-user { color: #ecf0f1; }
+
+/* Layout */
+.main-content {
+  flex: 1;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+/* Home */
+.home-container {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+}
+.home-container a { color: #3498db; }
+
+/* Auth Pages */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+.auth-box {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 520px;
+  width: 100%;
+}
+.auth-box h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-form { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 1rem; 
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-group label { 
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.form-group input {
+  padding: .75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+.form-group input:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+/* Buttons */
+.btn-primary {
+  background: #3498db;
+  color: #fff;
+  padding: .75rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+}
+.btn-primary:hover { background: #2980b9; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+.auth-switch {
+  text-align: center;
+  margin-top: 1rem;
+  color: #7f8c8d;
+}
+.auth-switch a { color: #3498db; }
+
+/* Error Messages */
+.error-message,
+.client-errors .error-message {
+  background: #ffebee;
+  color: #c62828;
+  padding: .75rem;
+  border-radius: 4px;
+  margin-bottom: .5rem;
+  font-size: .9rem;
+}
+
+/* Error Page */
+.error-container {
+  min-height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.error-box {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+/* Footer */
+.footer {
+  background: #2c3e50;
+  color: #fff;
+  text-align: center;
+  padding: 1rem;
+  margin-top: auto;
+}

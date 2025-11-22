@@ -55,3 +55,5 @@ The dataset provides public health inspection information for restaurants in NYC
 4. Drag file into this path (you have to create the 'raw' folder): CleanEatsNYC/data/raw
 5. Start mongo
 6. In terminal, run `npm run seed`
+7. Start the server with `npm start`
+8. Visit `http://localhost:3000` in your browser
