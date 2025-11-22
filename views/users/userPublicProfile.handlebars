@@ -1,0 +1,28 @@
+<div class="profile-container">
+    <h1>{{profileUser.displayName}}'s Profile</h1>
+    
+    {{#if profileUser}}
+        <div class="profile-info">
+            <div class="info-row">
+                <strong>Display Name:</strong>
+                <span>{{profileUser.displayName}}</span>
+            </div>
+            <div class="info-row">
+                <strong>Member Since:</strong>
+                <span>{{formatDate profileUser.createdAt}}</span>
+            </div>
+            {{#if isOwnProfile}}
+                <div class="info-row">
+                    <strong>Email:</strong>
+                    <span>{{profileUser.email}}</span>
+                </div>
+                <div class="profile-actions">
+                    <a href="/profile" class="btn-primary">Edit My Profile</a>
+                </div>
+            {{/if}}
+        </div>
+    {{else}}
+        <p>User not found.</p>
+    {{/if}}
+</div>
+

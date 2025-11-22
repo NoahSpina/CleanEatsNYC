@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb";
+
 export const checkAndTrimString = (
   str,
   variableName = "Some string I forgot to add the name of when running this function"
@@ -80,6 +82,37 @@ export function checkId(id) {
   return id;
 }
 
+export function checkString(str, varName) {
+  if (!str) throw new Error(`Error: ${varName} is required`);
+  if (typeof str !== "string") throw new Error(`Error: ${varName} must be a string`);
+  str = str.trim();
+  if (str.length === 0) throw new Error(`Error: ${varName} cannot be empty`);
+  return str;
+}
+
+export function checkName(name, varName = "name") {
+  name = checkString(name, varName);
+  if (name.length < 2) throw new Error(`Error: ${varName} must be at least 2 characters`);
+  if (name.length > 50) throw new Error(`Error: ${varName} must be less than 50 characters`);
+  if (!/^[a-zA-Z\s\-'.]+$/.test(name)) throw new Error(`Error: ${varName} contains invalid characters`);
+  return name.trim();
+}
+
+export function checkRating(rating) {
+  if (rating === undefined || rating === null) throw new Error("Error: Rating is required");
+  const num = Number(rating);
+  if (isNaN(num)) throw new Error("Error: Rating must be a number");
+  if (!Number.isInteger(num)) throw new Error("Error: Rating must be an integer");
+  if (num < 1 || num > 5) throw new Error("Error: Rating must be between 1 and 5");
+  return num;
+}
+
+export function checkComment(comment) {
+  comment = checkString(comment, "comment");
+  if (comment.length > 500) throw new Error("Error: Comment cannot exceed 500 characters");
+  return comment.trim();
+}
+
 // Email validation
 export function validateEmail(email) {
   email = checkAndTrimString(email, "email");
@@ -91,7 +124,7 @@ export function validateEmail(email) {
 // Password validation
 export function validatePassword(password) {
   password = checkAndTrimString(password, "password");
-  if (password.length < 6) throw new Error("Error: Password too short");
+  if (password.length < 8) throw new Error("Error: Password must be at least 8 characters");
   if (password.length > 128) throw new Error("Error: Password too long");
   if (!/[a-zA-Z]/.test(password)) throw new Error("Error: Must include a letter");
   if (!/[0-9]/.test(password)) throw new Error("Error: Must include a number");

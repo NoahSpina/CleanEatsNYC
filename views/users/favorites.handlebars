@@ -1,0 +1,49 @@
+<div class="favorites-container">
+    <h1>My Favorite Restaurants</h1>
+    
+    {{#if user}}
+        {{#if favorites.length}}
+            <div class="favorites-list">
+                {{#each favorites}}
+                    <div class="favorite-item" data-restaurant-id="{{this}}">
+                        <div class="restaurant-placeholder">
+                            <p>Restaurant ID: {{this}}</p>
+                            <p class="note">Restaurant details will be loaded here</p>
+                        </div>
+                        <button class="btn-remove" onclick="removeFavorite('{{this}}')">Remove</button>
+                    </div>
+                {{/each}}
+            </div>
+        {{else}}
+            <p class="empty-message">You haven't favorited any restaurants yet.</p>
+            <a href="/" class="btn-primary">Browse Restaurants</a>
+        {{/if}}
+    {{else}}
+        <p>Please log in to view your favorites.</p>
+    {{/if}}
+</div>
+
+<script>
+async function removeFavorite(restaurantId) {
+    if (!confirm('Remove this restaurant from your favorites?')) return;
+    
+    try {
+        const response = await fetch(`/favorite/${restaurantId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (e) {
+        alert('Error removing favorite');
+    }
+}
+</script>
+

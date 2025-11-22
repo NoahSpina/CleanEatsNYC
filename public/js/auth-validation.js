@@ -2,22 +2,26 @@
 const V = {
     email(e) {
       e = e?.trim();
-      return !e ? ["Email required"] : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) ? [] : ["Invalid email"];
+      if (!e) return ["Email required"];
+      if (/<[^>]*>/.test(e)) return ["Email cannot contain HTML tags"];
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) ? [] : ["Invalid email"];
     },
     username(u) {
       u = u?.trim();
       if (!u) return ["Username required"];
       if (u.length < 3) return ["Username too short"];
       if (!/^[a-zA-Z0-9_]+$/.test(u)) return ["Invalid username"];
+      if (/<[^>]*>/.test(u)) return ["Username cannot contain HTML tags"];
       return [];
     },
     password(p) {
       p = p?.trim();
       if (!p) return ["Password required"];
       const err = [];
-      if (p.length < 6) err.push("Password too short");
+      if (p.length < 8) err.push("Password must be at least 8 characters");
       if (!/[a-zA-Z]/.test(p)) err.push("Must include a letter");
       if (!/[0-9]/.test(p)) err.push("Must include a number");
+      if (/<[^>]*>/.test(p)) err.push("Password cannot contain HTML tags");
       return err;
     },
     match(p, c) {
@@ -63,7 +67,13 @@ const V = {
     if (!f) return;
   
     const u = bind("username", "usernameErrors", V.username);
-    const d = bind("displayName", "displayNameErrors", v => (v?.trim().length < 2 ? ["Display name too short"] : []));
+    const d = bind("displayName", "displayNameErrors", v => {
+      v = v?.trim();
+      if (!v) return ["Display name required"];
+      if (v.length < 2) return ["Display name too short"];
+      if (/<[^>]*>/.test(v)) return ["Display name cannot contain HTML tags"];
+      return [];
+    });
     const eVal = bind("email", "emailErrors", V.email);
     const p = bind("password", "passwordErrors", V.password);
     const cp = bind("confirmPassword", "confirmPasswordErrors", () =>

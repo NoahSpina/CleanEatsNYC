@@ -1,7 +1,9 @@
 import authRoutes from "./auth.js";
+import userRoutes from "./users.js";
 
 const constructorMethod = (app) => {
   app.use("/", authRoutes);
+  app.use("/", userRoutes);
 
   app.get("/", (req, res) => {
     res.render("home", {

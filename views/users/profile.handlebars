@@ -1,0 +1,40 @@
+<div class="profile-container">
+    <h1>My Profile</h1>
+    
+    {{#if user}}
+        <div class="profile-info">
+            <div class="info-row">
+                <strong>Display Name:</strong>
+                <span>{{user.displayName}}</span>
+            </div>
+            <div class="info-row">
+                <strong>Email:</strong>
+                <span>{{user.email}}</span>
+            </div>
+            <div class="info-row">
+                <strong>Username:</strong>
+                <span>{{user.username}}</span>
+            </div>
+            <div class="info-row">
+                <strong>Member Since:</strong>
+                <span>{{formatDate user.createdAt}}</span>
+            </div>
+            <div class="info-row">
+                <strong>Last Login:</strong>
+                <span>{{#if user.lastLoginAt}}{{formatDate user.lastLoginAt}}{{else}}Never{{/if}}</span>
+            </div>
+            <div class="info-row">
+                <strong>Favorite Restaurants:</strong>
+                <span>{{user.favorites.length}}</span>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <a href="/profile/edit" class="btn-primary">Edit Profile</a>
+            <a href="/favorites" class="btn-secondary">View Favorites</a>
+        </div>
+    {{else}}
+        <p>Please log in to view your profile.</p>
+    {{/if}}
+</div>
+
