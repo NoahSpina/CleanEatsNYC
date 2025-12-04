@@ -1,0 +1,80 @@
+<div class="auth-container">
+    <div class="auth-box">
+        <h1>Register</h1>
+        {{#if error}}
+            <div class="error-message">{{error}}</div>
+        {{/if}}
+        <form method="POST" action="/register" class="auth-form" id="registerForm" novalidate>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    value="{{username}}"
+                    required 
+                    placeholder="Enter your username (3-20 chars, letters/numbers/_)"
+                    autocomplete="username"
+                />
+                <div id="usernameErrors" class="client-errors" style="display: none;"></div>
+            </div>
+            <div class="form-group">
+                <label for="displayName">Display Name:</label>
+                <input 
+                    type="text" 
+                    id="displayName" 
+                    name="displayName" 
+                    value="{{displayName}}"
+                    required 
+                    placeholder="Enter your display name"
+                    autocomplete="name"
+                />
+                <div id="displayNameErrors" class="client-errors" style="display: none;"></div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    value="{{email}}"
+                    required 
+                    placeholder="Enter your email"
+                    autocomplete="email"
+                />
+                <div id="emailErrors" class="client-errors" style="display: none;"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    placeholder="Enter your password (min 6 chars, 1 letter, 1 number)"
+                    autocomplete="new-password"
+                />
+                <div id="passwordErrors" class="client-errors" style="display: none;"></div>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password:</label>
+                <input 
+                    type="password" 
+                    id="confirmPassword" 
+                    name="confirmPassword" 
+                    required 
+                    placeholder="Confirm your password"
+                    autocomplete="new-password"
+                />
+                <div id="confirmPasswordErrors" class="client-errors" style="display: none;"></div>
+            </div>
+            <button type="submit" class="btn-primary">Register</button>
+        </form>
+        <p class="auth-switch">
+            Already have an account? <a href="/login">Login here</a>
+        </p>
+    </div>
+</div>
+
+<script src="/public/js/auth-validation.js"></script>
+

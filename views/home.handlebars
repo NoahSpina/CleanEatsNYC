@@ -1,0 +1,10 @@
+<div class="home-container">
+    <h1>Welcome to CleanEats NYC</h1>
+    
+    {{#if user}}
+        <p>Welcome back, {{user.displayName}}!</p>
+        <p>You are logged in.</p>
+    {{else}}
+        <p>Please <a href="/login">login</a> or <a href="/register">register</a> to continue.</p>
+    {{/if}}
+</div>
