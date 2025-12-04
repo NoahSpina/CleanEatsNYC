@@ -1,0 +1,12 @@
+<div class="profile-container">
+    <h1>{{profileUser.displayName}}'s Profile</h1>
+    {{#if profileUser}}
+        <p><strong>Display Name:</strong> {{profileUser.displayName}}</p>
+        <p><strong>Member Since:</strong> {{profileUser.createdAt}}</p>
+        {{#if isOwnProfile}}
+            <p><strong>Email:</strong> {{profileUser.email}}</p>
+            <a href="/profile" class="btn-primary">Edit My Profile</a>
+        {{/if}}
+    {{/if}}
+</div>
+
