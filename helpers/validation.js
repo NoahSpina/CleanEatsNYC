@@ -1,7 +1,5 @@
 import { ObjectId } from "mongodb";
 
-import { ObjectId } from "mongodb";
-
 export const checkAndTrimString = (
   str,
   variableName = "Some string I forgot to add the name of when running this function"
@@ -70,9 +68,9 @@ export function normalizeString(str) {
 }
 
 export function checkId(id) {
-  if (!id) throw new Error('You must provide an id to search for');
-  id = checkAndTrimString(id, 'Id');
-  if (!ObjectId.isValid(id)) throw new Error(`${id} is not a valid ObjectId`)
+  if (!id) throw new Error("You must provide an id to search for");
+  id = checkAndTrimString(id, "Id");
+  if (!ObjectId.isValid(id)) throw new Error(`${id} is not a valid ObjectId`);
   return id;
 }
 
@@ -89,10 +87,12 @@ export function validatePassword(password) {
   password = checkAndTrimString(password, "password");
   if (password.length < 6) throw new Error("Error: Password too short");
   if (password.length > 128) throw new Error("Error: Password too long");
-  if (!/[a-zA-Z]/.test(password)) throw new Error("Error: Must include a letter");
+  if (!/[a-zA-Z]/.test(password))
+    throw new Error("Error: Must include a letter");
   if (!/[0-9]/.test(password)) throw new Error("Error: Must include a number");
   return password;
 }
+
 // Password match
 export function validatePasswordMatch(password, confirm) {
   password = checkAndTrimString(password, "password");
@@ -100,6 +100,7 @@ export function validatePasswordMatch(password, confirm) {
   if (password !== confirm) throw new Error("Error: Passwords do not match");
   return true;
 }
+
 // Username validation
 export function validateUsername(username) {
   username = checkAndTrimString(username, "username");
@@ -111,6 +112,7 @@ export function validateUsername(username) {
     throw new Error("Error: Username cannot start with number");
   return username.toLowerCase();
 }
+
 // Display name validation
 export function validateDisplayName(name) {
   name = checkAndTrimString(name, "display name");
@@ -121,6 +123,7 @@ export function validateDisplayName(name) {
     throw new Error("Error: Invalid characters in display name");
   return name.trim();
 }
+
 export function checkString(str, varName) {
   if (!str) throw new Error(`${varName} is required`);
   if (typeof str !== "string") throw new Error(`${varName} must be a string`);
@@ -150,20 +153,24 @@ export function checkName(name) {
   name = checkString(name, "name");
   if (name.length < 2) throw new Error("Name must be at least 2 characters");
   if (name.length > 50) throw new Error("Name too long");
-  if (!/^[a-zA-Z\s\-'.]+$/.test(name)) throw new Error("Name contains invalid characters");
+  if (!/^[a-zA-Z\s\-'.]+$/.test(name))
+    throw new Error("Name contains invalid characters");
   return name.trim();
 }
 
 export function checkRating(rating) {
-  if (rating === undefined || rating === null) throw new Error("Rating is required");
+  if (rating === undefined || rating === null)
+    throw new Error("Rating is required");
   const num = Number(rating);
-  if (isNaN(num) || !Number.isInteger(num)) throw new Error("Rating must be an integer");
+  if (isNaN(num) || !Number.isInteger(num))
+    throw new Error("Rating must be an integer");
   if (num < 1 || num > 5) throw new Error("Rating must be between 1 and 5");
   return num;
 }
 
 export function checkComment(comment) {
   comment = checkString(comment, "comment");
-  if (comment.length > 500) throw new Error("Comment cannot exceed 500 characters");
+  if (comment.length > 500)
+    throw new Error("Comment cannot exceed 500 characters");
   return comment.trim();
 }

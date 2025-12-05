@@ -7,13 +7,48 @@
         add reviews interactions
 */
 
-
-import {users, restaurants, inspections, reviews, comments} from '../config/mongoCollections.js';
-import {ObjectId} from 'mongodb';
-import validation, { checkAndTrimString } from '../helpers/validation.js';
+import {
+  users,
+  restaurants,
+  inspections,
+  reviews,
+  comments,
+} from "../config/mongoCollections.js";
+import { ObjectId } from "mongodb";
+import {
+  checkId,
+  checkNumber,
+  checkAndTrimString,
+  normalizeString,
+} from "../helpers/validation.js";
 
 let exportedMethods = {
-   async getRestaurantById(id) {
+  async getRestaurantsOnPage(page, limit) {
+    const restaurantCollection = await restaurants();
+    const skip = (page - 1) * limit; // for pagination.
+    const restaurantList = await restaurantCollection
+      .find({})
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+    const restaurantCount = await restaurantCollection.countDocuments({});
+    return { restaurantList, restaurantCount };
+  },
+
+  async getAllRestaurants() {
+    /* 
+        Inputs: N/A
+
+        Purpose: To retrieve an array of all restaurants
+
+        Returns: An array of all restaurant objects
+    */
+    const restaurantCollection = await restaurants();
+    return await restaurantCollection.find({}).toArray();
+  },
+
+  async getRestaurantById(id) {
     /* 
         Inputs: 
             - id: string of a restaurant's id
@@ -22,16 +57,19 @@ let exportedMethods = {
 
         Returns: Restaurant object
     */
-    id = validation.checkId(id);
+    id = checkId(id);
 
     const restaurantCollection = await restaurants();
-    const restaurant = await restaurantCollection.findOne({_id: new ObjectId(id) });
+    const restaurant = await restaurantCollection.findOne({
+      _id: new ObjectId(id),
+    });
 
-    if (!restaurant) throw new Error(`No restaurant with id of ${id} was found`);
+    if (!restaurant)
+      throw new Error(`No restaurant with id of ${id} was found`);
     return restaurant;
-   },
+  },
 
-   async getRestaurantByCamis(camis) {
+  async getRestaurantByCamis(camis) {
     /* 
         Inputs: 
             - camis: a string of the unique identifier for a NYC Open Data restaurant
@@ -40,15 +78,16 @@ let exportedMethods = {
 
         Returns: Restaurant object
     */
-    camis = validation.checkNumber(Number(camis), "camis");
+    camis = checkNumber(Number(camis), "camis");
 
     const restaurantCollection = await restaurants();
     const restaurant = await restaurantCollection.findOne({ camis });
 
-    if (!restaurant) throw new Error(`No restaurant with camis of ${id} was found`);
-   },
+    if (!restaurant)
+      throw new Error(`No restaurant with camis of ${id} was found`);
+  },
 
-   async searchRestaurants({ borough, cuisine, grade, searchTerm }) {
+  async searchRestaurants({ borough, cuisine, grade, searchTerm }) {
     /*
         Inputs: A object containing
             - borough: a string of the NYC borough
@@ -65,23 +104,26 @@ let exportedMethods = {
     const query = {};
 
     if (borough) {
-        query.borough = validation.checkAndTrimString(borough).toLowerCase();
+      query.borough = checkAndTrimString(borough).toLowerCase();
     }
     if (cuisine) {
-        query.cuisine = validation.checkAndTrimString(cuisine);
+      query.cuisine = checkAndTrimString(cuisine);
     }
     if (grade) {
-        query.grade = validation.checkAndTrimString(grade).toLowerCase();
+      query.grade = checkAndTrimString(grade).toLowerCase();
     }
     if (searchTerm) {
-        const searchTermValidated = validation.checkAndTrimString(searchTerm);
-        query.name = { $regex: validation.normalizeString(searchTermValidated), $options: 'i' };
+      const searchTermValidated = checkAndTrimString(searchTerm);
+      query.name = {
+        $regex: normalizeString(searchTermValidated),
+        $options: "i",
+      };
     }
 
     return restaurantCollection.find(query).toArray();
-   },
+  },
 
-   async getRestaurantWithInspections(id) {
+  async getRestaurantWithInspections(id) {
     /*
         Inputs: 
             - id: string of a restaurant's id
@@ -91,21 +133,26 @@ let exportedMethods = {
         Returns: Restaurant object with all its inspections
     */
 
-    id = validation.checkId(id);
+    id = checkId(id);
     const restaurantCollection = await restaurants();
     const inspectionCollection = await inspections();
 
-    const restaurant = await restaurantCollection.findOne({ _id: new Object(id) });
-    if (!restaurant) throw new Error(`No restaurant found with the id of ${id}`);
+    const restaurant = await restaurantCollection.findOne({
+      _id: new Object(id),
+    });
+    if (!restaurant)
+      throw new Error(`No restaurant found with the id of ${id}`);
 
-    const inspectionHistory = await inspectionCollection.find({ restaurantId: new ObjectId }).sort({ inspectionDate: -1 }).toArray();
+    const inspectionHistory = await inspectionCollection
+      .find({ restaurantId: new ObjectId() })
+      .sort({ inspectionDate: -1 })
+      .toArray();
 
-    return { ...restaurant, inspections: inspectionHistory};
-   },
+    return { ...restaurant, inspections: inspectionHistory };
+  },
 
-
-    //    Admin methods
-   async createRestaurant (data) {
+  //    Admin methods
+  async createRestaurant(data) {
     /*
         Inputs:
             - data: a object containing the information of the new restaurant
@@ -114,39 +161,44 @@ let exportedMethods = {
 
         Returns: The new restaurant object
     */
-    
+
     const restaurantCollection = await restaurants();
 
     const newRestaurant = {
-        camis: validation.checkNumber(data.camis, "camis"),
-        name: validation.checkAndTrimString(data.name).toLowerCase(),
-        borough: validation.checkAndTrimString(data.borough),
-        cuisine: validation.checkAndTrimString(data.cuisine),
-        address: {
-            building: validation.normalizeString(data.address?.building),
-            street: validation.normalizeString(data.address?.street),
-            zipcode: validation.normalizeString(data.address?.zipcode)
-        },
-        location: data.location || null,
-        latestGrade: null,
-        latestScore: null,
-        latestInspectionDate: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        cleanStreakCount: 0,
-        hasCleanStreakBadge: false
+      camis: checkNumber(data.camis, "camis"),
+      name: checkAndTrimString(data.name).toLowerCase(),
+      borough: checkAndTrimString(data.borough),
+      cuisine: checkAndTrimString(data.cuisine),
+      address: {
+        building: normalizeString(data.address?.building),
+        street: normalizeString(data.address?.street),
+        zipcode: normalizeString(data.address?.zipcode),
+      },
+      location: data.location || null,
+      latestGrade: null,
+      latestScore: null,
+      latestInspectionDate: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      cleanStreakCount: 0,
+      hasCleanStreakBadge: false,
     };
 
     //TODO update information (ie. latestGrade, latestScore, cleanStreakCount etc)
 
-    const insertedRestaurant = await restaurantCollection.insertOne(newRestaurant);
-    if(!insertedRestaurant) throw new Error('Failed to create new restaurant');
-    if(!insertedRestaurant.insertedId) throw new Error('Failed to create new restaurant id');
+    const insertedRestaurant = await restaurantCollection.insertOne(
+      newRestaurant
+    );
+    if (!insertedRestaurant) throw new Error("Failed to create new restaurant");
+    if (!insertedRestaurant.insertedId)
+      throw new Error("Failed to create new restaurant id");
 
-    return await this.getRestaurantById(insertedRestaurant.insertedId.toString());
-   },
+    return await this.getRestaurantById(
+      insertedRestaurant.insertedId.toString()
+    );
+  },
 
-   async updateRestaurant (id, updates) {
+  async updateRestaurant(id, updates) {
     /*
         Inputs:
             - id: restaurant id string
@@ -156,21 +208,25 @@ let exportedMethods = {
 
         Returns: The updated restaurant object
     */
-    id = validation.checkId(id);
+    id = checkId(id);
     const restaurantCollection = await restaurants();
 
     const updatedRestaurant = {
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
-    const result = await restaurantCollection.updateOne( { _id: new ObjectId(id)}, { $set: updatedRestaurant});
-    if (result.matchedCount === 0) throw new Error(`Restaurant with the id ${id} could not be found`);
+    const result = await restaurantCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updatedRestaurant }
+    );
+    if (result.matchedCount === 0)
+      throw new Error(`Restaurant with the id ${id} could not be found`);
 
     return await this.getRestaurantById(id);
-   },
-   
-   async deleteRestaurant(id) {
+  },
+
+  async deleteRestaurant(id) {
     /*
         Inputs:
             - id: restaurant id string
@@ -179,20 +235,21 @@ let exportedMethods = {
 
         Returns: A object confirming the deletion
     */
-    id = validation.checkId(id);
+    id = checkId(id);
 
     const restaurantCollection = await restaurants();
     const inspectionCollection = await inspections();
     //const reviewCollection = await reviews();
-        //Add back when reviews are added
-    
-    await inspectionCollection.deleteMany( { restaurantId: new ObjectId(id)} );
-    const result = await restaurantCollection.deleteOne( { _id: new ObjectId(id)} );
-    if (result.deletedCount === 0) throw new Error(`Failed to delete restaurant with id ${id}`);
-    return { deleted: true};
-   }
+    //Add back when reviews are added
+
+    await inspectionCollection.deleteMany({ restaurantId: new ObjectId(id) });
+    const result = await restaurantCollection.deleteOne({
+      _id: new ObjectId(id),
+    });
+    if (result.deletedCount === 0)
+      throw new Error(`Failed to delete restaurant with id ${id}`);
+    return { deleted: true };
+  },
 };
 
-
 export default exportedMethods;
-

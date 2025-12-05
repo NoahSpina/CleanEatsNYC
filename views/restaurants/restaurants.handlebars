@@ -1,0 +1,56 @@
+{{!-- Page to display list of restaurants 
+with search bar, sort function, filter function, and pagination --}}
+<h1>Restaurants</h1>
+{{!-- TODO: search, sort, filter --}}
+
+{{!-- restaurant list --}}
+{{#if restaurantList}}
+    <div class="restaurant-list">
+        {{#each restaurantList}}
+            <article>
+                <h2>
+                    <a href="/restaurants/{{this._id}}">{{this.name}}</a>
+                    
+                </h2>
+
+                <p>
+                    Borough: {{this.borough}}
+                    Cuisine: {{this.cuisine}}
+                </p>
+
+                <p>
+                    Latest Grade: {{#if this.latestGrade}}{{this.latestGrade}}{{else}}N/A{{/if}}
+                    Latest Score: {{#if this.latestScore}}{{this.latestScore}}{{else}}N/A{{/if}}
+                </p>
+
+                <p>
+                    Latest Inspection Date: {{#if this.latestInspectionDate}}{{this.latestInspectionDate}}{{else}}N/A{{/if}}
+                </p>
+
+                <p>
+                    {{!-- IDK. We can change he badge, but for now I just copy and pasted an emoji --}}
+                    {{#if this.hasCleanStreakBadge}} 🏅 (&lt;= 1 violation and an A grade for their last 2 inspections){{/if}}
+                </p>
+            </article>
+        {{/each}}
+    </div>
+
+    {{!-- pagination --}}
+    <div class="pagination">
+        {{#if hasPrevPage}}
+            <a class="page-button" href="/restaurants?page={{prevPage}}">&lt;- Previous Page</a>
+        {{else}}
+            <a class="page-button disabled">&lt;- Previous Page</a>
+        {{/if}}
+
+        <span>--- Page {{page}} of {{totalPages}} ---</span>
+
+        {{#if hasNextPage}}
+            <a class="page-button" href="/restaurants?page={{nextPage}}">Next Page -&gt;</a>
+        {{else}}
+            <a class="page-button disabled">Next Page -&gt;</a>
+        {{/if}}
+    </div>
+{{else}}
+    <p>No restaurants found.</p>
+{{/if}}

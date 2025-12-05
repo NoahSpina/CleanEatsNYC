@@ -6,11 +6,11 @@ import {
   validatePassword,
   validatePasswordMatch,
   validateUsername,
-  validateDisplayName, 
-  checkId, 
-  checkEmail, 
-  checkPassword, 
-  checkName
+  validateDisplayName,
+  checkId,
+  checkEmail,
+  checkPassword,
+  checkName,
 } from "../helpers/validation.js";
 import bcrypt from "bcrypt";
 
@@ -24,7 +24,7 @@ const sanitizeUser = (user, override = {}) => ({
   createdAt: user.createdAt,
   updatedAt: user.updatedAt,
   lastLoginAt: user.lastLoginAt,
-  ...override
+  ...override,
 });
 
 const findUserByLogin = async (col, input) => {
@@ -46,10 +46,10 @@ let exportedMethods = {
 
     const displayName = `${firstName} ${lastName}`;
     const username = email.split("@")[0] + Math.floor(Math.random() * 1000);
-    
+
     let uniqueUsername = username;
     let counter = 0;
-    while (await col.findOne({ username: uniqueUsername }) && counter < 100) {
+    while ((await col.findOne({ username: uniqueUsername })) && counter < 100) {
       uniqueUsername = username + counter;
       counter++;
     }
@@ -67,7 +67,7 @@ let exportedMethods = {
       favorites: [],
       createdAt: now,
       updatedAt: now,
-      lastLoginAt: null
+      lastLoginAt: null,
     };
 
     const insert = await col.insertOne(newUser);
@@ -82,7 +82,7 @@ let exportedMethods = {
       favorites: newUser.favorites,
       createdAt: newUser.createdAt,
       updatedAt: newUser.updatedAt,
-      lastLoginAt: newUser.lastLoginAt
+      lastLoginAt: newUser.lastLoginAt,
     };
     return result;
   },
@@ -92,7 +92,17 @@ let exportedMethods = {
     const col = await users();
     const user = await col.findOne({ email });
     if (!user) return null;
-    return { _id: user._id.toString(), role: user.role, username: user.username, email: user.email, displayName: user.displayName, favorites: user.favorites || [], createdAt: user.createdAt, updatedAt: user.updatedAt, lastLoginAt: user.lastLoginAt };
+    return {
+      _id: user._id.toString(),
+      role: user.role,
+      username: user.username,
+      email: user.email,
+      displayName: user.displayName,
+      favorites: user.favorites || [],
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      lastLoginAt: user.lastLoginAt,
+    };
   },
 
   async getUserById(id) {
@@ -100,7 +110,17 @@ let exportedMethods = {
     const col = await users();
     const user = await col.findOne({ _id: new ObjectId(id) });
     if (!user) throw new Error(`User with id ${id} not found`);
-    return { _id: user._id.toString(), role: user.role, username: user.username, email: user.email, displayName: user.displayName, favorites: user.favorites || [], createdAt: user.createdAt, updatedAt: user.updatedAt, lastLoginAt: user.lastLoginAt };
+    return {
+      _id: user._id.toString(),
+      role: user.role,
+      username: user.username,
+      email: user.email,
+      displayName: user.displayName,
+      favorites: user.favorites || [],
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      lastLoginAt: user.lastLoginAt,
+    };
   },
 
   async updateUserProfile(id, updatesObj) {
@@ -114,13 +134,16 @@ let exportedMethods = {
     if (!user) throw new Error(`User with id ${id} not found`);
 
     const allowedUpdates = {};
-    
+
     if (updatesObj.displayName !== undefined) {
       allowedUpdates.displayName = checkName(updatesObj.displayName);
     }
     if (updatesObj.email !== undefined) {
       const newEmail = checkEmail(updatesObj.email);
-      const existingUser = await col.findOne({ email: newEmail, _id: { $ne: new ObjectId(id) } });
+      const existingUser = await col.findOne({
+        email: newEmail,
+        _id: { $ne: new ObjectId(id) },
+      });
       if (existingUser) throw new Error("Email already in use");
       allowedUpdates.email = newEmail;
     }
@@ -136,7 +159,8 @@ let exportedMethods = {
       { $set: allowedUpdates }
     );
 
-    if (result.modifiedCount === 0) throw new Error("Failed to update user profile");
+    if (result.modifiedCount === 0)
+      throw new Error("Failed to update user profile");
 
     return await this.getUserById(id);
   },
@@ -150,30 +174,43 @@ let exportedMethods = {
     if (!user) throw new Error(`User with id ${userId} not found`);
 
     const restaurantObjId = new ObjectId(restaurantId);
-    
-    if (user.favorites && user.favorites.some(fav => fav.toString() === restaurantId)) {
+
+    if (
+      user.favorites &&
+      user.favorites.some((fav) => fav.toString() === restaurantId)
+    ) {
       throw new Error("Restaurant is already in favorites");
     }
 
     const result = await col.updateOne(
       { _id: new ObjectId(userId) },
-      { 
+      {
         $addToSet: { favorites: restaurantObjId },
-        $set: { updatedAt: new Date() }
+        $set: { updatedAt: new Date() },
       }
     );
+  },
 
-  async registerUser(username, email, password, displayName, confirmPassword = null) {
+  async registerUser(
+    username,
+    email,
+    password,
+    displayName,
+    confirmPassword = null
+  ) {
     username = validateUsername(username);
     email = validateEmail(email);
     password = validatePassword(password);
     displayName = validateDisplayName(displayName);
-    if (confirmPassword !== null) validatePasswordMatch(password, confirmPassword);
+    if (confirmPassword !== null)
+      validatePasswordMatch(password, confirmPassword);
 
     const col = await users();
 
-    if (await col.findOne({ email })) throw new Error("Error: Email already exists");
-    if (await col.findOne({ username })) throw new Error("Error: Username already exists");
+    if (await col.findOne({ email }))
+      throw new Error("Error: Email already exists");
+    if (await col.findOne({ username }))
+      throw new Error("Error: Username already exists");
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const now = new Date();
@@ -187,7 +224,7 @@ let exportedMethods = {
       favorites: [],
       createdAt: now,
       updatedAt: now,
-      lastLoginAt: null
+      lastLoginAt: null,
     };
 
     const insert = await col.insertOne(newUser);
@@ -209,7 +246,10 @@ let exportedMethods = {
     if (!valid) throw new Error("Error: Invalid email/username or password");
 
     const now = new Date();
-    await col.updateOne({ _id: user._id }, { $set: { lastLoginAt: now, updatedAt: now } });
+    await col.updateOne(
+      { _id: user._id },
+      { $set: { lastLoginAt: now, updatedAt: now } }
+    );
 
     return sanitizeUser(user, { updatedAt: now, lastLoginAt: now });
   },
@@ -233,7 +273,8 @@ let exportedMethods = {
     const col = await users();
     const user = await col.findOne({ _id: new ObjectId(id) });
     return user ? sanitizeUser(user) : null;
-    if (result.modifiedCount === 0) throw new Error("Failed to add favorite restaurant");
+    if (result.modifiedCount === 0)
+      throw new Error("Failed to add favorite restaurant");
 
     return await this.getUserById(userId);
   },
@@ -247,23 +288,27 @@ let exportedMethods = {
     if (!user) throw new Error(`User with id ${userId} not found`);
 
     const restaurantObjId = new ObjectId(restaurantId);
-    
-    if (!user.favorites || !user.favorites.some(fav => fav.toString() === restaurantId)) {
+
+    if (
+      !user.favorites ||
+      !user.favorites.some((fav) => fav.toString() === restaurantId)
+    ) {
       throw new Error("Restaurant is not in favorites");
     }
 
     const result = await col.updateOne(
       { _id: new ObjectId(userId) },
-      { 
+      {
         $pull: { favorites: restaurantObjId },
-        $set: { updatedAt: new Date() }
+        $set: { updatedAt: new Date() },
       }
     );
 
-    if (result.modifiedCount === 0) throw new Error("Failed to remove favorite restaurant");
+    if (result.modifiedCount === 0)
+      throw new Error("Failed to remove favorite restaurant");
 
     return await this.getUserById(userId);
-  }
+  },
 };
 
 export default exportedMethods;
