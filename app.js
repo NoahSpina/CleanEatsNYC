@@ -36,9 +36,18 @@ app.use((req, res, next) => {
   const timestamp = new Date().toUTCString();
   const method = req.method;
   const route = req.originalUrl;
-  const authenticated = req.session?.user ? "(Authenticated User)" : "(Non-Authenticated User)";
-  
+  const authenticated = req.session?.user
+    ? "(Authenticated User)"
+    : "(Non-Authenticated User)";
+
   console.log(`[${timestamp}]: ${method} ${route} ${authenticated}`);
+  next();
+});
+
+app.use("/restaurants", (req, res, next) => {
+  if (!req.session.user) {
+    return res.redirect("/");
+  }
   next();
 });
 
@@ -48,4 +57,3 @@ app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   console.log("Your routes will be running on http://localhost:3000");
 });
-

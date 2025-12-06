@@ -32,12 +32,15 @@ for await (const row of stream) {
     const cuisine = normalizeString(row["CUISINE DESCRIPTION"]);
 
     const inspectionDateStr = row["INSPECTION DATE"];
-    const inspectionDate = toDateorNull(inspectionDateStr);
+    const inspectionDateObj = toDateorNull(inspectionDateStr);
 
-    if (!inspectionDate || inspectionDate.getFullYear() === 1900) continue;
+    if (!inspectionDateObj || inspectionDateObj.getFullYear() === 1900)
+      continue;
 
+    // "YYYY-MM-DD" string
+    const inspectionDate = inspectionDateObj.toISOString().slice(0, 10);
     // Restaurants
-    let restaurantDocument = {};
+    let restaurantDocument = restaurantByCamis;
     if (!restaurantByCamis.has(camis)) {
       // New restaurant
       const latStr = row["Latitude"];
@@ -75,7 +78,7 @@ for await (const row of stream) {
     }
 
     // Inspections
-    const dateKey = inspectionDate.toISOString().slice(0, 10);
+    const dateKey = inspectionDate;
     const key = inspectionKey(camis, dateKey);
 
     let inspection = inspectionsByKey.get(key);
@@ -118,8 +121,8 @@ for await (const row of stream) {
 
 // latestGrade, latestScore, latestInspectionDate, Streak
 for (const [camis, inspectionList] of inspectionsPerCamis) {
-  inspectionList.sort(
-    (a, b) => b.inspectionDate.getTime() - a.inspectionDate.getTime()
+  inspectionList.sort((a, b) =>
+    b.inspectionDate.localeCompare(a.inspectionDate)
   );
   const latest = inspectionList[0];
   const restaurant = restaurantByCamis.get(camis);

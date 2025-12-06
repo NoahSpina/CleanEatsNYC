@@ -5,14 +5,19 @@
             create, update, remove inspection
 */
 
-import {users, restaurants, inspections, reviews, comments} from '../config/mongoCollections.js';
-import {ObjectId} from 'mongodb';
-import validation from '../helpers/validation.js';
-import { inspectionData } from './index.js';
+import {
+  users,
+  restaurants,
+  inspections,
+  reviews,
+  comments,
+} from "../config/mongoCollections.js";
+import { ObjectId } from "mongodb";
+import { checkId } from "../helpers/validation.js";
 
 let exportedMethods = {
-    async getInspectionById (id) {
-        /* 
+  async getInspectionById(id) {
+    /* 
             Inputs: 
                 - id: string of a restaurant's id
     
@@ -20,15 +25,18 @@ let exportedMethods = {
     
             Returns: Inspection object
         */
-       id = validation.checkId(id);
+    id = checkId(id);
 
-       const inspectionCollection = await inspections();
-       const inspection = await inspectionCollection.findOne( { _id: new ObjectId(id) } );
-       if (!inspection) throw new Error(`No inspection was found with the id ${id}`);
-       return inspection;
-    },
-    async getInspectionsByRestaurant(restaurantId) {
-        /* 
+    const inspectionCollection = await inspections();
+    const inspection = await inspectionCollection.findOne({
+      _id: new ObjectId(id),
+    });
+    if (!inspection)
+      throw new Error(`No inspection was found with the id ${id}`);
+    return inspection;
+  },
+  async getInspectionsByRestaurant(restaurantId) {
+    /* 
             Inputs: 
                 - restaurantId: string of a restaurant's id
     
@@ -36,24 +44,24 @@ let exportedMethods = {
     
             Returns: Array of inspection objects
         */
-        restaurantId = validation.checkId(restaurantId);
+    restaurantId = checkId(restaurantId);
 
-        const inspectionCollection = await inspections();
-        const restaurantCollection = await restaurants();
+    const inspectionCollection = await inspections();
+    const restaurantCollection = await restaurants();
 
-        //Validate restaurant exists with that id
-        const restaurant = await restaurantCollection.findOne({ _id: new ObjectId(restaurantId) });
-        if (!restaurant) throw new Error('No restaurant found with the id ${id}');
+    //Validate restaurant exists with that id
+    const restaurant = await restaurantCollection.findOne({
+      _id: new ObjectId(restaurantId),
+    });
+    if (!restaurant) throw new Error(`No restaurant found with the id ${id}`);
 
-        const result = inspectionCollection.find({ restaurantId: new ObjectId(restaurantId) }).sort({ inspectionDate: -1}).toArray();
+    const inspectionsList = await inspectionCollection
+      .find({ restaurantId: new ObjectId(restaurantId) })
+      .sort({ inspectionDate: -1 })
+      .toArray();
 
-    }
-
-
-
-
-
-
+    return inspectionsList;
+  },
 };
 
 export default exportedMethods;

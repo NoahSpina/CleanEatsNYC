@@ -1,0 +1,103 @@
+{{#if restaurant}}
+<div class="page">
+    <button type="button" class="back-button" onclick="window.history.back()">← Back to list</button>
+
+    <section class="restaurant-detail">
+        <header class="restaurant-detail__header">
+            <h1 class="restaurant-detail__name">{{restaurant.name}}</h1>
+
+            {{#if restaurant.hasCleanStreakBadge}}
+            <span class="badge badge--clean">
+                🏅 Clean streak (≤ 1 violation and A grade for last 2 inspections)
+            </span>
+            {{/if}}
+        </header>
+
+        <dl class="restaurant-detail__info">
+            <div class="stat-row">
+                <dt>Borough</dt>
+                <dd>{{restaurant.borough}}</dd>
+            </div>
+
+            <div class="stat-row">
+                <dt>Cuisine</dt>
+                <dd>{{restaurant.cuisine}}</dd>
+            </div>
+
+            <div class="stat-row">
+                <dt>Latest Grade</dt>
+                <dd>{{#if restaurant.latestGrade}}{{restaurant.latestGrade}}{{else}}N/A{{/if}}</dd>
+            </div>
+
+            <div class="stat-row">
+                <dt>Latest Score</dt>
+                <dd>{{#if restaurant.latestScore}}{{restaurant.latestScore}}{{else}}N/A{{/if}}</dd>
+            </div>
+
+            <div class="stat-row">
+                <dt>Latest Inspection</dt>
+                <dd>{{#if restaurant.latestInspectionDate}}{{restaurant.latestInspectionDate}}{{else}}N/A{{/if}}</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="restaurant-inspections">
+        <h2>Inspections</h2>
+        
+        <br>
+
+        {{#if inspections.length}}
+            <ul class="inspection-list">
+                {{#each inspections}}
+                    <li class="inspection-item">
+                    {{!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details --}}
+                    <details>
+                        <summary class="inspection-summary">
+                            <span class="inspection-label">
+                                Inspection 
+                            </span>
+                            <span class="inspection-date">
+                                {{#if this.inspectionDate}}{{this.inspectionDate}}{{else}}{{this.inspectionDate}}{{/if}}
+                            </span>
+                        </summary>
+
+                        <div class="inspection-body">
+                        <p>Grade:
+                            {{#if this.grade}}{{this.grade}}{{else}}N/A{{/if}}
+                        </p>
+                        <p>Score:
+                            {{#if this.score}}{{this.score}}{{else}}N/A{{/if}}
+                        </p>
+
+                        {{#if this.violations.length}}
+                            <h3>Violations</h3>
+                            <ul class="inspection-violations">
+                            {{#each this.violations}}
+                                <li class="violation-row">
+                                <p class="violation-code">
+                                    Code: {{this.code}}
+                                </p>
+                                <p class="violation-description">
+                                    {{this.description}}
+                                </p>
+                                </li>
+                            {{/each}}
+                            </ul>
+                        {{else}}
+                            <p>No violations for this inspection.</p>
+                        {{/if}}
+                        </div>
+                    </details>
+                    </li>
+                {{/each}}
+            </ul>
+        {{else}}
+            <p>No inspections found.</p>
+        {{/if}}
+    </section>
+
+    {{!-- TODO: reviews + comments --}}
+</div>
+{{else}}
+    <p>Restaurant not found.</p>
+{{/if}}

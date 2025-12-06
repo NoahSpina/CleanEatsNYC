@@ -1,56 +1,93 @@
-{{!-- Page to display list of restaurants 
-with search bar, sort function, filter function, and pagination --}}
-<h1>Restaurants</h1>
-{{!-- TODO: search, sort, filter --}}
+{{!-- views/restaurants/restaurants.handlebars --}}
 
-{{!-- restaurant list --}}
+<div class="page">
+    <header class="page-header">
+        <h1>Restaurants</h1>
+    </header>
+
+{{!-- TODO: search, sort, filter  --}}
+{{!-- <form class="restaurant-filters"> ... </form> --}}
+
 {{#if restaurantList}}
-    <div class="restaurant-list">
-        {{#each restaurantList}}
-            <article>
-                <h2>
-                    <a href="/restaurants/{{this._id}}">{{this.name}}</a>
-                    
-                </h2>
-
-                <p>
-                    Borough: {{this.borough}}
-                    Cuisine: {{this.cuisine}}
-                </p>
-
-                <p>
-                    Latest Grade: {{#if this.latestGrade}}{{this.latestGrade}}{{else}}N/A{{/if}}
-                    Latest Score: {{#if this.latestScore}}{{this.latestScore}}{{else}}N/A{{/if}}
-                </p>
-
-                <p>
-                    Latest Inspection Date: {{#if this.latestInspectionDate}}{{this.latestInspectionDate}}{{else}}N/A{{/if}}
-                </p>
-
-                <p>
-                    {{!-- IDK. We can change he badge, but for now I just copy and pasted an emoji --}}
-                    {{#if this.hasCleanStreakBadge}} 🏅 (&lt;= 1 violation and an A grade for their last 2 inspections){{/if}}
-                </p>
-            </article>
-        {{/each}}
-    </div>
-
-    {{!-- pagination --}}
-    <div class="pagination">
+    {{!-- Pagination on top and bottom --}}
+    <nav class="pagination">
         {{#if hasPrevPage}}
-            <a class="page-button" href="/restaurants?page={{prevPage}}">&lt;- Previous Page</a>
+            <a class="page-button" href="/restaurants?page={{prevPage}}">&larr; Previous</a>
         {{else}}
-            <a class="page-button disabled">&lt;- Previous Page</a>
+            <span class="page-button disabled">&larr; Previous</span>
         {{/if}}
 
-        <span>--- Page {{page}} of {{totalPages}} ---</span>
+        <span class="pagination__page-info">
+            Page {{page}} of {{totalPages}}
+        </span>
 
         {{#if hasNextPage}}
-            <a class="page-button" href="/restaurants?page={{nextPage}}">Next Page -&gt;</a>
+            <a class="page-button" href="/restaurants?page={{nextPage}}">Next &rarr;</a>
         {{else}}
-            <a class="page-button disabled">Next Page -&gt;</a>
+            <span class="page-button disabled">Next &rarr;</span>
         {{/if}}
-    </div>
-{{else}}
-    <p>No restaurants found.</p>
-{{/if}}
+    </nav>
+
+    <br>
+
+    <section class="restaurant-list">
+        {{#each restaurantList}}
+            <article class="restaurant-card">
+                <header class="restaurant-card__header">
+                    <h2 class="restaurant-card__name">
+                        <a href="/restaurants/{{this._id}}">
+                            {{this.name}}
+                        </a>
+                    </h2>
+
+                    {{#if this.hasCleanStreakBadge}}
+                        <span class="badge badge--clean">
+                            🏅 Clean streak
+                        </span>
+                    {{/if}}
+                </header>
+
+                <p class="restaurant-card__meta">
+                    <span class="meta-pill">{{this.cuisine}}</span>
+                    <span class="meta-pill">{{this.borough}}</span>
+                </p>
+
+                <dl class="restaurant-card__stats">
+                    <div class="stat-row">
+                        <dt>Latest Grade</dt>
+                        <dd>{{#if this.latestGrade}}{{this.latestGrade}}{{else}}N/A{{/if}}</dd>
+                    </div>
+                    <div class="stat-row">
+                        <dt>Latest Score</dt>
+                        <dd>{{#if this.latestScore}}{{this.latestScore}}{{else}}N/A{{/if}}</dd>
+                    </div>
+                    <div class="stat-row">
+                        <dt>Latest Inspection</dt>
+                        <dd>{{#if this.latestInspectionDate}}{{this.latestInspectionDate}}{{else}}N/A{{/if}}</dd>
+                    </div>
+                </dl>
+            </article>
+        {{/each}}
+    </section>
+
+    <nav class="pagination">
+        {{#if hasPrevPage}}
+            <a class="page-button" href="/restaurants?page={{prevPage}}">&larr; Previous</a>
+        {{else}}
+            <span class="page-button disabled">&larr; Previous</span>
+        {{/if}}
+
+        <span class="pagination__page-info">
+            Page {{page}} of {{totalPages}}
+        </span>
+
+        {{#if hasNextPage}}
+            <a class="page-button" href="/restaurants?page={{nextPage}}">Next &rarr;</a>
+        {{else}}
+            <span class="page-button disabled">Next &rarr;</span>
+        {{/if}}
+    </nav>
+    {{else}}
+        <p>No restaurants found.</p>
+    {{/if}}
+</div>
