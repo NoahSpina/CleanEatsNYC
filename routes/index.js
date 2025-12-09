@@ -1,5 +1,6 @@
 import authRoutes from "./auth.js";
 import restaurantRoutes from "./restaurants.js";
+import analyticsRoutes from "./analytics.js";
 
 const constructorMethod = (app) => {
   app.use((req, res, next) => {
@@ -21,6 +22,9 @@ const constructorMethod = (app) => {
 
   // restaurant routes: /restaurants, /restaurants/:id
   app.use("/", restaurantRoutes);
+
+  // analytics routes: /analytics
+  app.use("/analytics", analyticsRoutes);
 
   app.use("*splat", (req, res) => {
     res.status(404).render("error", {

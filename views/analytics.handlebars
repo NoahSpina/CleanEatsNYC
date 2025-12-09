@@ -1,0 +1,308 @@
+<div class="analytics-container">
+    <h1>Analytics Dashboard</h1>
+    
+    <!-- Ratings Analytics Section -->
+    <section class="analytics-section">
+        <h2>⭐ Average Ratings Analysis</h2>
+        
+        <div class="filters-container">
+            <div class="filter-group">
+                <label for="boroughFilter">Filter by Borough:</label>
+                <select id="boroughFilter">
+                    <option value="">All Boroughs</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="cuisineFilter">Filter by Cuisine:</label>
+                <select id="cuisineFilter">
+                    <option value="">All Cuisines</option>
+                </select>
+            </div>
+            <button id="applyFilters" class="btn-primary">Apply Filters</button>
+        </div>
+
+        <div class="table-container">
+            <h3>Top 10 Restaurants by Rating</h3>
+            <div id="ratingsTableContainer">
+                <div class="loading">Loading ratings data...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Violations Analytics Section -->
+    <section class="analytics-section">
+        <h2>⚠️ Violation Trends</h2>
+        
+        <div class="violations-grid">
+            <div class="chart-item">
+                <h3>Violations Per Year</h3>
+                <canvas id="yearlyViolationsChart"></canvas>
+            </div>
+            
+            <div class="chart-item">
+                <h3>Top Violation Codes</h3>
+                <canvas id="commonViolationsChart"></canvas>
+            </div>
+            
+            <div class="chart-item">
+                <h3>Average Score Trend</h3>
+                <canvas id="scoreTrendChart"></canvas>
+            </div>
+            
+            <div class="chart-item">
+                <h3>Grade Distribution Over Time</h3>
+                <div id="gradeTrendContainer">
+                    <div class="loading">Loading grade data...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/public/js/analytics.js"></script>
+
+<style>
+.analytics-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.analytics-section {
+    margin-bottom: 3rem;
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.analytics-section h2 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 0.5rem;
+}
+
+.filters-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.filter-group select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-width: 150px;
+}
+
+
+.violations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 2rem;
+}
+
+.chart-item {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.chart-item h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.chart-item canvas {
+    max-height: 300px;
+}
+
+.table-container {
+    margin-top: 2rem;
+}
+
+.table-container h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.ratings-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.ratings-table th,
+.ratings-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+}
+
+.ratings-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.ratings-table th.sortable {
+    user-select: none;
+    position: relative;
+    padding-right: 2rem;
+}
+
+.ratings-table th.sortable:hover {
+    background-color: #e9ecef;
+}
+
+.ratings-table th.sortable::after {
+    content: '↕️';
+    position: absolute;
+    right: 0.5rem;
+    opacity: 0.5;
+}
+
+.ratings-table th.sort-asc::after {
+    content: '↑';
+    opacity: 1;
+}
+
+.ratings-table th.sort-desc::after {
+    content: '↓';
+    opacity: 1;
+}
+
+.ratings-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.ratings-table .restaurant-name {
+    font-weight: 500;
+    max-width: 200px;
+    white-space: normal;
+}
+
+.rating-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.rating-excellent { background-color: #27ae60; }
+.rating-good { background-color: #f39c12; }
+.rating-fair { background-color: #e67e22; }
+.rating-poor { background-color: #e74c3c; }
+
+.grade-timeline {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.grade-year {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    min-width: 200px;
+    text-align: center;
+}
+
+.grade-year h4 {
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.grade-badges {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 0.5rem;
+}
+
+.grade-badge {
+    display: inline-block;
+    padding: 0.5rem;
+    border-radius: 50%;
+    color: white;
+    font-weight: bold;
+    min-width: 40px;
+    text-align: center;
+}
+
+.grade-a { background-color: #27ae60; }
+.grade-b { background-color: #f39c12; }
+.grade-c { background-color: #e74c3c; }
+.grade-n\/a { background-color: #95a5a6; }
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+.error-message {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+    border-left: 4px solid #c62828;
+}
+
+.no-data-message {
+    background-color: #f0f4f8;
+    color: #64748b;
+    padding: 2rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+    text-align: center;
+    border: 2px dashed #cbd5e1;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .filters-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .violations-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .grade-timeline {
+        flex-direction: column;
+    }
+}
+</style>
