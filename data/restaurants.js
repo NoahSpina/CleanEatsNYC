@@ -10,7 +10,7 @@
 
 import {users, restaurants, inspections, reviews, comments} from '../config/mongoCollections.js';
 import {ObjectId} from 'mongodb';
-import validation, { checkAndTrimString } from '../helpers/validation.js';
+import { checkId, checkNumber, checkAndTrimString, normalizeString } from '../helpers/validation.js';
 
 let exportedMethods = {
    async getRestaurantById(id) {
@@ -22,7 +22,7 @@ let exportedMethods = {
 
         Returns: Restaurant object
     */
-    id = validation.checkId(id);
+    id = checkId(id);
 
     const restaurantCollection = await restaurants();
     const restaurant = await restaurantCollection.findOne({_id: new ObjectId(id) });
@@ -40,12 +40,12 @@ let exportedMethods = {
 
         Returns: Restaurant object
     */
-    camis = validation.checkNumber(Number(camis), "camis");
+    camis = checkNumber(Number(camis), "camis");
 
     const restaurantCollection = await restaurants();
     const restaurant = await restaurantCollection.findOne({ camis });
 
-    if (!restaurant) throw new Error(`No restaurant with camis of ${id} was found`);
+    if (!restaurant) throw new Error(`No restaurant with camis of ${camis} was found`);
    },
 
    async searchRestaurants({ borough, cuisine, grade, searchTerm }) {
@@ -65,17 +65,17 @@ let exportedMethods = {
     const query = {};
 
     if (borough) {
-        query.borough = validation.checkAndTrimString(borough).toLowerCase();
+        query.borough = checkAndTrimString(borough).toLowerCase();
     }
     if (cuisine) {
-        query.cuisine = validation.checkAndTrimString(cuisine);
+        query.cuisine = checkAndTrimString(cuisine);
     }
     if (grade) {
-        query.grade = validation.checkAndTrimString(grade).toLowerCase();
+        query.grade = checkAndTrimString(grade).toLowerCase();
     }
     if (searchTerm) {
-        const searchTermValidated = validation.checkAndTrimString(searchTerm);
-        query.name = { $regex: validation.normalizeString(searchTermValidated), $options: 'i' };
+        const searchTermValidated = checkAndTrimString(searchTerm);
+        query.name = { $regex: normalizeString(searchTermValidated), $options: 'i' };
     }
 
     return restaurantCollection.find(query).toArray();
@@ -91,14 +91,14 @@ let exportedMethods = {
         Returns: Restaurant object with all its inspections
     */
 
-    id = validation.checkId(id);
+    id = checkId(id);
     const restaurantCollection = await restaurants();
     const inspectionCollection = await inspections();
 
-    const restaurant = await restaurantCollection.findOne({ _id: new Object(id) });
+    const restaurant = await restaurantCollection.findOne({ _id: new ObjectId(id) });
     if (!restaurant) throw new Error(`No restaurant found with the id of ${id}`);
 
-    const inspectionHistory = await inspectionCollection.find({ restaurantId: new ObjectId }).sort({ inspectionDate: -1 }).toArray();
+    const inspectionHistory = await inspectionCollection.find({ restaurantId: new ObjectId(id) }).sort({ inspectionDate: -1 }).toArray();
 
     return { ...restaurant, inspections: inspectionHistory};
    },
@@ -118,14 +118,14 @@ let exportedMethods = {
     const restaurantCollection = await restaurants();
 
     const newRestaurant = {
-        camis: validation.checkNumber(data.camis, "camis"),
-        name: validation.checkAndTrimString(data.name).toLowerCase(),
-        borough: validation.checkAndTrimString(data.borough),
-        cuisine: validation.checkAndTrimString(data.cuisine),
+        camis: checkNumber(data.camis, "camis"),
+        name: checkAndTrimString(data.name).toLowerCase(),
+        borough: checkAndTrimString(data.borough),
+        cuisine: checkAndTrimString(data.cuisine),
         address: {
-            building: validation.normalizeString(data.address?.building),
-            street: validation.normalizeString(data.address?.street),
-            zipcode: validation.normalizeString(data.address?.zipcode)
+            building: normalizeString(data.address?.building),
+            street: normalizeString(data.address?.street),
+            zipcode: normalizeString(data.address?.zipcode)
         },
         location: data.location || null,
         latestGrade: null,
@@ -156,7 +156,7 @@ let exportedMethods = {
 
         Returns: The updated restaurant object
     */
-    id = validation.checkId(id);
+    id = checkId(id);
     const restaurantCollection = await restaurants();
 
     const updatedRestaurant = {
@@ -179,7 +179,7 @@ let exportedMethods = {
 
         Returns: A object confirming the deletion
     */
-    id = validation.checkId(id);
+    id = checkId(id);
 
     const restaurantCollection = await restaurants();
     const inspectionCollection = await inspections();
