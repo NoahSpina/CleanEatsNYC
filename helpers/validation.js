@@ -1,7 +1,5 @@
 import { ObjectId } from "mongodb";
 
-import { ObjectId } from "mongodb";
-
 export const checkAndTrimString = (
   str,
   variableName = "Some string I forgot to add the name of when running this function"

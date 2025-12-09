@@ -43,10 +43,10 @@ let exportedMethods = {
 
         //Validate restaurant exists with that id
         const restaurant = await restaurantCollection.findOne({ _id: new ObjectId(restaurantId) });
-        if (!restaurant) throw new Error('No restaurant found with the id ${id}');
+        if (!restaurant) throw new Error(`No restaurant found with the id ${restaurantId}`);
 
-        const result = inspectionCollection.find({ restaurantId: new ObjectId(restaurantId) }).sort({ inspectionDate: -1}).toArray();
-
+        const result = await inspectionCollection.find({ restaurantId: new ObjectId(restaurantId) }).sort({ inspectionDate: -1}).toArray();
+        return result;
     }
 
 
