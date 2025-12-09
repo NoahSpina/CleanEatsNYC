@@ -1,4 +1,4 @@
-// Analytics Dashboard JavaScript
+// Simple Analytics Dashboard JavaScript
 
 let yearlyViolationsChart = null;
 let commonViolationsChart = null;
@@ -8,18 +8,13 @@ let scoreTrendChart = null;
 document.addEventListener('DOMContentLoaded', function() {
     loadRatingsAnalytics();
     loadViolationAnalytics();
-    setupEventListeners();
-});
-
-// Setup event listeners
-function setupEventListeners() {
+    
+    // Setup filter button
     const applyFiltersBtn = document.getElementById('applyFilters');
     if (applyFiltersBtn) {
-        applyFiltersBtn.addEventListener('click', function() {
-            loadRatingsAnalytics();
-        });
+        applyFiltersBtn.addEventListener('click', loadRatingsAnalytics);
     }
-}
+});
 
 // Load and display ratings analytics
 async function loadRatingsAnalytics() {
@@ -40,15 +35,13 @@ async function loadRatingsAnalytics() {
             throw new Error(result.error || 'Failed to load ratings data');
         }
         
-        // Populate filter dropdowns if they're empty
+        // Populate filter dropdowns
         populateFilters(result.filters);
         
         if (result.hasData && result.data.length > 0) {
-            // Create ratings table
             createRatingsTable(result.data);
         } else {
-            // Show no data message
-            showNoDataMessage('ratingsTableContainer', 'No ratings data available. Reviews are needed to generate analytics.');
+            showNoDataMessage('ratingsTableContainer', 'No ratings data available.');
         }
         
     } catch (error) {
@@ -91,8 +84,8 @@ function populateFilters(filters) {
     if (boroughSelect && boroughSelect.children.length === 1) {
         filters.boroughs.forEach(borough => {
             const option = document.createElement('option');
-            option.value = sanitizeText(borough);
-            option.textContent = sanitizeText(borough);
+            option.value = borough;
+            option.textContent = borough;
             boroughSelect.appendChild(option);
         });
     }
@@ -100,15 +93,14 @@ function populateFilters(filters) {
     if (cuisineSelect && cuisineSelect.children.length === 1) {
         filters.cuisines.forEach(cuisine => {
             const option = document.createElement('option');
-            option.value = sanitizeText(cuisine);
-            option.textContent = sanitizeText(cuisine);
+            option.value = cuisine;
+            option.textContent = cuisine;
             cuisineSelect.appendChild(option);
         });
     }
 }
 
-
-// Create ratings table
+// Create simple ratings table
 function createRatingsTable(data) {
     const container = document.getElementById('ratingsTableContainer');
     if (!container) return;
@@ -118,156 +110,30 @@ function createRatingsTable(data) {
         return;
     }
     
-    // Create table wrapper for better styling
-    const tableWrapper = document.createElement('div');
-    tableWrapper.className = 'table-wrapper';
-    
-    const table = document.createElement('table');
-    table.className = 'ratings-table sortable-table';
-    table.id = 'ratingsTable';
-    
-    // Create header
-    const header = table.createTHead();
-    const headerRow = header.insertRow();
-    
-    const columns = [
-        { key: 'restaurantName', label: 'Restaurant Name', sortable: true },
-        { key: 'avgRating', label: 'Avg Rating', sortable: true },
-        { key: 'totalReviews', label: 'Total Reviews', sortable: true },
-        { key: 'latestGrade', label: 'Latest Grade', sortable: true },
-        { key: 'latestInspectionDate', label: 'Latest Inspection', sortable: true },
-        { key: 'borough', label: 'Borough', sortable: true },
-        { key: 'cuisine', label: 'Cuisine', sortable: true }
-    ];
-    
-    columns.forEach((col, index) => {
-        const th = document.createElement('th');
-        th.textContent = col.label;
-        th.className = col.sortable ? 'sortable' : '';
-        th.dataset.column = col.key;
-        th.dataset.sort = 'none';
-        
-        if (col.sortable) {
-            th.style.cursor = 'pointer';
-            th.addEventListener('click', () => sortTable(index, col.key));
-        }
-        
-        headerRow.appendChild(th);
-    });
-    
-    // Create body
-    const tbody = table.createTBody();
-    tbody.id = 'ratingsTableBody';
-    
-    // Populate table with data
-    populateTableRows(tbody, data);
-    
-    tableWrapper.appendChild(table);
-    container.innerHTML = '';
-    container.appendChild(tableWrapper);
-}
-
-// Populate table rows
-function populateTableRows(tbody, data) {
-    tbody.innerHTML = '';
+    let html = '<table class="ratings-table"><thead><tr>';
+    html += '<th>Restaurant Name</th>';
+    html += '<th>Avg Rating</th>';
+    html += '<th>Total Reviews</th>';
+    html += '<th>Latest Grade</th>';
+    html += '<th>Latest Inspection</th>';
+    html += '<th>Borough</th>';
+    html += '<th>Cuisine</th>';
+    html += '</tr></thead><tbody>';
     
     data.forEach(restaurant => {
-        const row = tbody.insertRow();
-        
-        // Restaurant name
-        const nameCell = row.insertCell();
-        nameCell.textContent = sanitizeText(restaurant.restaurantName);
-        nameCell.className = 'restaurant-name';
-        
-        // Average rating
-        const ratingCell = row.insertCell();
-        const ratingBadge = document.createElement('span');
-        ratingBadge.className = `rating-badge ${getRatingClass(restaurant.avgRating)}`;
-        ratingBadge.textContent = restaurant.avgRating.toFixed(1);
-        ratingCell.appendChild(ratingBadge);
-        ratingCell.dataset.value = restaurant.avgRating;
-        
-        // Total reviews
-        const reviewsCell = row.insertCell();
-        reviewsCell.textContent = restaurant.totalReviews;
-        reviewsCell.dataset.value = restaurant.totalReviews;
-        
-        // Latest grade
-        const gradeCell = row.insertCell();
-        const gradeBadge = document.createElement('span');
-        gradeBadge.className = `grade-badge grade-${(restaurant.latestGrade || 'N/A').toLowerCase()}`;
-        gradeBadge.textContent = restaurant.latestGrade || 'N/A';
-        gradeCell.appendChild(gradeBadge);
-        gradeCell.dataset.value = restaurant.latestGrade || 'Z'; // Z for sorting N/A to end
-        
-        // Latest inspection date
-        const dateCell = row.insertCell();
-        if (restaurant.latestInspectionDate) {
-            const date = new Date(restaurant.latestInspectionDate);
-            dateCell.textContent = date.toLocaleDateString();
-            dateCell.dataset.value = date.getTime();
-        } else {
-            dateCell.textContent = 'N/A';
-            dateCell.dataset.value = 0;
-        }
-        
-        // Borough
-        const boroughCell = row.insertCell();
-        boroughCell.textContent = sanitizeText(restaurant.borough);
-        
-        // Cuisine
-        const cuisineCell = row.insertCell();
-        cuisineCell.textContent = sanitizeText(restaurant.cuisine);
-    });
-}
-
-// Sort table function
-function sortTable(columnIndex, columnKey) {
-    const table = document.getElementById('ratingsTable');
-    const tbody = document.getElementById('ratingsTableBody');
-    const header = table.querySelector('th[data-column="' + columnKey + '"]');
-    
-    if (!tbody || !header) return;
-    
-    const rows = Array.from(tbody.querySelectorAll('tr'));
-    const currentSort = header.dataset.sort;
-    const newSort = currentSort === 'asc' ? 'desc' : 'asc';
-    
-    // Clear all sort indicators
-    table.querySelectorAll('th[data-sort]').forEach(th => {
-        th.dataset.sort = 'none';
-        th.classList.remove('sort-asc', 'sort-desc');
+        html += '<tr>';
+        html += `<td>${escapeHtml(restaurant.restaurantName)}</td>`;
+        html += `<td><span class="rating-badge ${getRatingClass(restaurant.avgRating)}">${restaurant.avgRating.toFixed(1)}</span></td>`;
+        html += `<td>${restaurant.totalReviews}</td>`;
+        html += `<td><span class="grade-badge grade-${(restaurant.latestGrade || 'n/a').toLowerCase()}">${restaurant.latestGrade || 'N/A'}</span></td>`;
+        html += `<td>${restaurant.latestInspectionDate ? new Date(restaurant.latestInspectionDate).toLocaleDateString() : 'N/A'}</td>`;
+        html += `<td>${escapeHtml(restaurant.borough)}</td>`;
+        html += `<td>${escapeHtml(restaurant.cuisine)}</td>`;
+        html += '</tr>';
     });
     
-    // Set new sort indicator
-    header.dataset.sort = newSort;
-    header.classList.add(`sort-${newSort}`);
-    
-    // Sort rows
-    rows.sort((a, b) => {
-        const aCell = a.cells[columnIndex];
-        const bCell = b.cells[columnIndex];
-        
-        let aValue, bValue;
-        
-        // Use data-value if available, otherwise use text content
-        if (aCell.dataset.value !== undefined) {
-            aValue = isNaN(aCell.dataset.value) ? aCell.dataset.value : parseFloat(aCell.dataset.value);
-            bValue = isNaN(bCell.dataset.value) ? bCell.dataset.value : parseFloat(bCell.dataset.value);
-        } else {
-            aValue = aCell.textContent.trim();
-            bValue = bCell.textContent.trim();
-        }
-        
-        let comparison = 0;
-        if (aValue < bValue) comparison = -1;
-        if (aValue > bValue) comparison = 1;
-        
-        return newSort === 'asc' ? comparison : -comparison;
-    });
-    
-    // Re-append sorted rows
-    rows.forEach(row => tbody.appendChild(row));
+    html += '</tbody></table>';
+    container.innerHTML = html;
 }
 
 // Create yearly violations chart
@@ -286,7 +152,7 @@ function createYearlyViolationsChart(data) {
             datasets: [{
                 label: 'Total Violations',
                 data: data.map(item => item.violations),
-                borderColor: 'rgba(231, 76, 60, 1)',
+                borderColor: '#e74c3c',
                 backgroundColor: 'rgba(231, 76, 60, 0.1)',
                 borderWidth: 2,
                 fill: true
@@ -295,26 +161,7 @@ function createYearlyViolationsChart(data) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Number of Violations'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Year'
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
+            plugins: { legend: { display: false } }
         }
     });
 }
@@ -331,12 +178,12 @@ function createCommonViolationsChart(data) {
     commonViolationsChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: data.map(item => sanitizeText(item.code)),
+            labels: data.map(item => item.code),
             datasets: [{
                 label: 'Violation Count',
                 data: data.map(item => item.count),
-                backgroundColor: 'rgba(230, 126, 34, 0.8)',
-                borderColor: 'rgba(230, 126, 34, 1)',
+                backgroundColor: '#e67e22',
+                borderColor: '#d35400',
                 borderWidth: 1
             }]
         },
@@ -344,28 +191,7 @@ function createCommonViolationsChart(data) {
             responsive: true,
             maintainAspectRatio: false,
             indexAxis: 'y',
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Number of Violations'
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        afterLabel: function(context) {
-                            const item = data[context.dataIndex];
-                            return `Description: ${sanitizeText(item.description)}`;
-                        }
-                    }
-                }
-            }
+            plugins: { legend: { display: false } }
         }
     });
 }
@@ -379,7 +205,7 @@ function createScoreTrendChart(data) {
         scoreTrendChart.destroy();
     }
     
-    // Group by year and calculate yearly averages
+    // Simple yearly average
     const yearlyData = {};
     data.forEach(item => {
         if (!yearlyData[item.year]) {
@@ -401,7 +227,7 @@ function createScoreTrendChart(data) {
             datasets: [{
                 label: 'Average Score',
                 data: chartData.map(item => item.avgScore),
-                borderColor: 'rgba(155, 89, 182, 1)',
+                borderColor: '#9b59b6',
                 backgroundColor: 'rgba(155, 89, 182, 0.1)',
                 borderWidth: 2,
                 fill: true
@@ -410,31 +236,12 @@ function createScoreTrendChart(data) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Average Inspection Score'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Year'
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
+            plugins: { legend: { display: false } }
         }
     });
 }
 
-// Create grade trend display
+// Create simple grade trend display
 function createGradeTrend(data) {
     const container = document.getElementById('gradeTrendContainer');
     if (!container) return;
@@ -444,39 +251,21 @@ function createGradeTrend(data) {
         return;
     }
     
-    const timeline = document.createElement('div');
-    timeline.className = 'grade-timeline';
+    let html = '<div style="display: flex; gap: 1rem; flex-wrap: wrap;">';
     
     data.forEach(yearData => {
-        const yearDiv = document.createElement('div');
-        yearDiv.className = 'grade-year';
-        
-        const yearTitle = document.createElement('h4');
-        yearTitle.textContent = yearData.year;
-        yearDiv.appendChild(yearTitle);
-        
-        const totalText = document.createElement('p');
-        totalText.textContent = `Total Inspections: ${yearData.total}`;
-        totalText.style.fontSize = '0.9rem';
-        totalText.style.color = '#7f8c8d';
-        yearDiv.appendChild(totalText);
-        
-        const badgesDiv = document.createElement('div');
-        badgesDiv.className = 'grade-badges';
-        
-        ['A', 'B', 'C'].forEach(grade => {
-            const badge = document.createElement('div');
-            badge.className = `grade-badge grade-${grade.toLowerCase()}`;
-            badge.textContent = `${grade}: ${yearData.grades[grade]}%`;
-            badgesDiv.appendChild(badge);
-        });
-        
-        yearDiv.appendChild(badgesDiv);
-        timeline.appendChild(yearDiv);
+        html += `<div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 1rem; min-width: 150px; text-align: center;">`;
+        html += `<h4>${yearData.year}</h4>`;
+        html += `<p style="font-size: 0.9rem; color: #666;">Total: ${yearData.total}</p>`;
+        html += `<div style="display: flex; justify-content: space-around; margin-top: 0.5rem;">`;
+        html += `<span class="grade-badge grade-a">A: ${yearData.grades.A}%</span>`;
+        html += `<span class="grade-badge grade-b">B: ${yearData.grades.B}%</span>`;
+        html += `<span class="grade-badge grade-c">C: ${yearData.grades.C}%</span>`;
+        html += `</div></div>`;
     });
     
-    container.innerHTML = '';
-    container.appendChild(timeline);
+    html += '</div>';
+    container.innerHTML = html;
 }
 
 // Helper functions
@@ -487,7 +276,7 @@ function getRatingClass(rating) {
     return 'rating-poor';
 }
 
-function sanitizeText(text) {
+function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
@@ -497,21 +286,20 @@ function sanitizeText(text) {
 function showLoading(containerId, message) {
     const container = document.getElementById(containerId);
     if (container) {
-        container.innerHTML = `<div class="loading">${sanitizeText(message)}</div>`;
+        container.innerHTML = `<div class="loading">${escapeHtml(message)}</div>`;
     }
 }
 
 function showError(containerId, message) {
     const container = document.getElementById(containerId);
     if (container) {
-        container.innerHTML = `<div class="error-message">${sanitizeText(message)}</div>`;
+        container.innerHTML = `<div class="error-message">${escapeHtml(message)}</div>`;
     }
 }
 
 function showNoDataMessage(containerId, message) {
     const container = document.getElementById(containerId);
     if (container) {
-        container.innerHTML = `<div class="no-data-message">${sanitizeText(message)}</div>`;
+        container.innerHTML = `<div class="no-data-message">${escapeHtml(message)}</div>`;
     }
 }
-

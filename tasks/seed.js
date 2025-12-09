@@ -40,7 +40,7 @@ for await (const row of stream) {
     // "YYYY-MM-DD" string
     const inspectionDate = inspectionDateObj.toISOString().slice(0, 10);
     // Restaurants
-    let restaurantDocument = restaurantByCamis;
+    let restaurantDocument = restaurantByCamis.get(camis);
     if (!restaurantByCamis.has(camis)) {
       // New restaurant
       const latStr = row["Latitude"];
@@ -192,20 +192,20 @@ const reviewDocs = [];
 for (const restaurant of allRestaurants) {
   // Generate 3-8 random reviews per restaurant
   const numReviews = Math.floor(Math.random() * 6) + 3; // 3 to 8 reviews
-  
+
   for (let i = 0; i < numReviews; i++) {
     // Random rating between 1 and 5
     const rating = Math.floor(Math.random() * 5) + 1;
-    
+
     // Random review text
     const reviewText = sampleReviewTexts[Math.floor(Math.random() * sampleReviewTexts.length)];
-    
+
     // Random date within the last 2 years
     const now = new Date();
     const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
     const randomTime = twoYearsAgo.getTime() + Math.random() * (now.getTime() - twoYearsAgo.getTime());
     const createdAt = new Date(randomTime);
-    
+
     reviewDocs.push({
       _id: new ObjectId(),
       restaurantId: restaurant._id,
@@ -228,6 +228,7 @@ if (reviewDocs.length > 0) {
   }
   console.log(`Added ${reviewDocs.length} reviews for ${allRestaurants.length} restaurants.`);
 }
+
 
 console.log("Seeding completed!");
 await closeConnection();
