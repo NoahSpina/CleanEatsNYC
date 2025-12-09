@@ -111,7 +111,7 @@ let exportedMethods = {
       query.cuisine = checkAndTrimString(cuisine);
     }
     if (grade) {
-      query.grade = checkAndTrimString(grade).toLowerCase();
+      query.latestGrade = checkAndTrimString(grade).toUpperCase();
     }
     if (searchTerm) {
       const searchTermValidated = checkAndTrimString(searchTerm);
