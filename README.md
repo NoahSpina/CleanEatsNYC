@@ -20,7 +20,7 @@ CleanEats NYC is a web application that allows users to explore New York City re
 1. Geolocation-based recommendations ('Restaurants near me').
 2. Users should be able to compare 2-3 restaurants simultaneously, side-by-side.
 3. Users should get updates when they log in to show if any of their ‘favorited’ restaurants received new health inspections.
-4. Restaurants that have had no violations and an A grade for their last 3 inspections should have a badge that shows off their clean streak.
+4. Restaurants that have had ≤ 1 violation and an A grade for their last 2 inspections should have a badge that shows off their clean streak.
 5. There could be a page that allows users to select individual/multiple violations and a list of restaurants that have that/those violations.
 
 ## Dataset Details
