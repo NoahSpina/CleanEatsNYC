@@ -53,7 +53,7 @@ let exportedMethods = {
     const restaurant = await restaurantCollection.findOne({
       _id: new ObjectId(restaurantId),
     });
-    if (!restaurant) throw new Error(`No restaurant found with the id ${id}`);
+    if (!restaurant) throw new Error(`No restaurant found with the id ${restaurantId}`);
 
     const inspectionsList = await inspectionCollection
       .find({ restaurantId: new ObjectId(restaurantId) })

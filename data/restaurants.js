@@ -84,7 +84,8 @@ let exportedMethods = {
     const restaurant = await restaurantCollection.findOne({ camis });
 
     if (!restaurant)
-      throw new Error(`No restaurant with camis of ${id} was found`);
+      throw new Error(`No restaurant with camis of ${camis} was found`);
+    return restaurant;
   },
 
   async searchRestaurants({ borough, cuisine, grade, searchTerm }) {
@@ -138,13 +139,13 @@ let exportedMethods = {
     const inspectionCollection = await inspections();
 
     const restaurant = await restaurantCollection.findOne({
-      _id: new Object(id),
+      _id: new ObjectId(id),
     });
     if (!restaurant)
       throw new Error(`No restaurant found with the id of ${id}`);
 
     const inspectionHistory = await inspectionCollection
-      .find({ restaurantId: new ObjectId() })
+      .find({ restaurantId: new ObjectId(id) })
       .sort({ inspectionDate: -1 })
       .toArray();
 
