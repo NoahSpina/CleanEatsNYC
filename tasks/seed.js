@@ -23,7 +23,11 @@ const stream = fs.createReadStream("data/raw/nyc_inspections.csv").pipe(csv());
 
 for await (const row of stream) {
   try {
-    const camisRaw = row["CAMIS"];
+    let camisRaw = row["CAMIS"];
+    if (!camisRaw) {
+      const altKey = Object.keys(row).find(key => key.includes("CAMIS"));
+      if (altKey) camisRaw = row[altKey];
+    }
     if (!camisRaw) continue;
 
     const camis = Number(camisRaw);
