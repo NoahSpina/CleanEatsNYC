@@ -189,6 +189,10 @@ let exportedMethods = {
         $set: { updatedAt: new Date() },
       }
     );
+    if (result.modifiedCount === 0)
+      throw new Error("Failed to add favorite restaurant");
+
+    return await this.getUserById(userId);
   },
 
   async registerUser(
@@ -273,10 +277,6 @@ let exportedMethods = {
     const col = await users();
     const user = await col.findOne({ _id: new ObjectId(id) });
     return user ? sanitizeUser(user) : null;
-    if (result.modifiedCount === 0)
-      throw new Error("Failed to add favorite restaurant");
-
-    return await this.getUserById(userId);
   },
 
   async removeFavoriteRestaurant(userId, restaurantId) {
