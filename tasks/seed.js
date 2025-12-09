@@ -40,7 +40,7 @@ for await (const row of stream) {
     // "YYYY-MM-DD" string
     const inspectionDate = inspectionDateObj.toISOString().slice(0, 10);
     // Restaurants
-    let restaurantDocument = restaurantByCamis;
+    let restaurantDocument = restaurantByCamis.get(camis);
     if (!restaurantByCamis.has(camis)) {
       // New restaurant
       const latStr = row["Latitude"];
