@@ -1,5 +1,5 @@
 import { dbConnection, closeConnection } from "../config/mongoConnection.js";
-import { restaurants, inspections } from "../config/mongoCollections.js";
+import { restaurants, inspections, reviews } from "../config/mongoCollections.js";
 import fs from "fs";
 import csv from "csv-parser";
 import { normalizeString, toDateorNull } from "../helpers/validation.js";
@@ -162,6 +162,73 @@ console.log("Inserting inspections...");
 if (inspectionDocs.length) {
   await inspectionsCollection.insertMany(inspectionDocs);
 }
+
+// Add random reviews for all restaurants
+console.log("Adding random reviews for restaurants...");
+const reviewsCollection = await reviews();
+
+// Sample review texts for variety
+const sampleReviewTexts = [
+  "Great food and excellent service!",
+  "The food was okay, but the service could be better.",
+  "Amazing experience! Will definitely come back.",
+  "Not bad, but nothing special.",
+  "Excellent quality and great atmosphere.",
+  "The food was good but a bit pricey.",
+  "Outstanding! One of the best meals I've had.",
+  "Decent place, would recommend.",
+  "The service was slow but the food made up for it.",
+  "Perfect for a quick meal.",
+  "Great value for money!",
+  "The ambiance was nice but the food was average.",
+  "Absolutely loved it!",
+  "Good food, clean environment.",
+  "Could use some improvement in service.",
+];
+
+const allRestaurants = await restaurantsCollection.find({}).toArray();
+const reviewDocs = [];
+
+for (const restaurant of allRestaurants) {
+  // Generate 3-8 random reviews per restaurant
+  const numReviews = Math.floor(Math.random() * 6) + 3; // 3 to 8 reviews
+
+  for (let i = 0; i < numReviews; i++) {
+    // Random rating between 1 and 5
+    const rating = Math.floor(Math.random() * 5) + 1;
+
+    // Random review text
+    const reviewText = sampleReviewTexts[Math.floor(Math.random() * sampleReviewTexts.length)];
+
+    // Random date within the last 2 years
+    const now = new Date();
+    const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
+    const randomTime = twoYearsAgo.getTime() + Math.random() * (now.getTime() - twoYearsAgo.getTime());
+    const createdAt = new Date(randomTime);
+
+    reviewDocs.push({
+      _id: new ObjectId(),
+      restaurantId: restaurant._id,
+      userId: new ObjectId(), // Dummy user ID for seed data
+      rating: rating,
+      reviewText: reviewText,
+      createdAt: createdAt,
+      updatedAt: createdAt,
+    });
+  }
+}
+
+if (reviewDocs.length > 0) {
+  // Insert reviews in batches to avoid memory issues
+  const batchSize = 1000;
+  for (let i = 0; i < reviewDocs.length; i += batchSize) {
+    const batch = reviewDocs.slice(i, i + batchSize);
+    await reviewsCollection.insertMany(batch);
+    console.log(`Inserted ${Math.min(i + batchSize, reviewDocs.length)} of ${reviewDocs.length} reviews...`);
+  }
+  console.log(`Added ${reviewDocs.length} reviews for ${allRestaurants.length} restaurants.`);
+}
+
 
 console.log("Seeding completed!");
 await closeConnection();

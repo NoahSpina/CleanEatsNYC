@@ -1,0 +1,61 @@
+<div class="analytics-container">
+    <h1>Analytics Dashboard</h1>
+    
+    <section class="analytics-section">
+        <h2>Average Ratings Analysis</h2>
+        
+        <div class="filters-container">
+            <div class="filter-group">
+                <label for="boroughFilter">Filter by Borough:</label>
+                <select id="boroughFilter">
+                    <option value="">All Boroughs</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="cuisineFilter">Filter by Cuisine:</label>
+                <select id="cuisineFilter">
+                    <option value="">All Cuisines</option>
+                </select>
+            </div>
+            <button id="applyFilters" class="btn-primary">Apply Filters</button>
+        </div>
+
+        <div class="table-container">
+            <h3>Top 10 Restaurants by Rating</h3>
+            <div id="ratingsTableContainer">
+                <div class="loading">Loading ratings data...</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="analytics-section">
+        <h2>Violation Trends</h2>
+        
+        <div class="violations-grid">
+            <div class="chart-item">
+                <h3>Violations Per Year</h3>
+                <canvas id="yearlyViolationsChart"></canvas>
+            </div>
+            
+            <div class="chart-item">
+                <h3>Top Violation Codes</h3>
+                <canvas id="commonViolationsChart"></canvas>
+            </div>
+            
+            <div class="chart-item">
+                <h3>Average Score Trend</h3>
+                <canvas id="scoreTrendChart"></canvas>
+            </div>
+            
+            <div class="chart-item">
+                <h3>Grade Distribution Over Time</h3>
+                <div id="gradeTrendContainer">
+                    <div class="loading">Loading grade data...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/public/js/analytics.js"></script>
