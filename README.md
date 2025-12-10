@@ -52,8 +52,9 @@ The dataset provides public health inspection information for restaurants in NYC
 1. Clone repo `git clone https://github.com/NoahSpina/CleanEatsNYC`
 2. Run `npm i`
 3. Download csv of [NYC Inspection Data](https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/43nn-pn8j/about_data)
-4. Drag file into this path (you have to create the 'raw' folder): CleanEatsNYC/data/raw
-5. Start mongo
-6. In terminal, run `npm run seed`
-7. Start the server with `npm start`
-8. Visit `http://localhost:3000` in your browser
+4. Rename csv file to nyc_inspections.csv
+5. Drag file into this path (you have to create the 'raw' folder): CleanEatsNYC/data/raw
+6. Start mongo
+7. In terminal, run `npm run seed`
+8. Start the server with `npm start`
+9. Visit `http://localhost:3000` in your browser
