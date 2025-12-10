@@ -21,6 +21,8 @@ const constructorMethod = (app) => {
     });
   });
 
+  // profile routes
+  app.use("/", userRoutes); 
   // restaurant routes: /restaurants, /restaurants/:id
   app.use("/", restaurantRoutes);
 

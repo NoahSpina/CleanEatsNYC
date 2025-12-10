@@ -141,6 +141,27 @@ body {
   cursor: not-allowed;
 }
 
+.btn-secondary {
+  background: #3498db;
+  color: #fff;
+  padding: .75rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  font-size: small;
+}
+
+.btn-secondary:hover {
+  background: #2980b9;
+}
+
+.btn-secondary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
 .auth-switch {
   text-align: center;
   margin-top: 1rem;
@@ -830,4 +851,118 @@ body {
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px dashed #cbd5e1;
+}
+
+.homepage-links {
+  max-width: auto; 
+  margin: 1.5rem auto;
+  text-align: center;
+  padding: auto;
+}
+
+.homepage-link {
+  border: 1.5px solid black;
+  border-radius: 50px;
+  background-color: #cbd5e1;
+  color: rgb(26, 72, 158);
+  font-size: 1.1rem;
+  margin: 2rem 0;
+  text-decoration: none;
+  display: block;
+}
+
+.review-form {
+  display: none;
+}
+
+.write-review-btn {
+  margin-bottom: 0.75rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; 
+  margin-top: 1rem;
+}
+
+.review-card {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.review-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.review-meta {
+  font-size: 0.9rem;
+  color: #555;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.review-date {
+  font-style: italic;
+}
+
+.review-body {
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+.review-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.review-photo-item {
+  flex: 1 1 150px;
+  text-align: center;
+}
+
+.review-photo {
+  max-width: 100%;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.review-photo-item figcaption {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  color: #666;
+}
+
+.resturant-title {
+  font-weight: bolder;
+  font-size: 1.5rem;
+  color: #222;
+  text-decoration: none;
+}
+
+.resturant-title a {
+  color: #5e2c86;
+  text-decoration: none;
 }

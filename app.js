@@ -2,9 +2,14 @@ import express from "express";
 import { engine } from "express-handlebars";
 import session from "express-session";
 import configRoutes from "./routes/index.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 const PORT = 3000;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.engine(
   "handlebars",
@@ -15,6 +20,7 @@ app.engine(
       eq: (a, b) => a === b,
       ne: (a, b) => a !== b,
       or: (a, b, c) => a || b || c,
+      isLoggedIn: (user) => !!user,
     },
   })
 );
@@ -24,6 +30,8 @@ app.set("views", "./views");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/public", express.static("public"));
+
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 app.use(
   session({
@@ -38,6 +46,11 @@ app.use(
 );
 
 app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  next();
+});
+
+app.use((req, res, next) => {
   const timestamp = new Date().toUTCString();
   const method = req.method;
   const route = req.originalUrl;
@@ -50,6 +63,13 @@ app.use((req, res, next) => {
 });
 
 app.use("/restaurants", (req, res, next) => {
+  if (!req.session.user) {
+    return res.redirect("/");
+  }
+  next();
+});
+
+app.use("/profile", (req, res, next) => {
   if (!req.session.user) {
     return res.redirect("/");
   }

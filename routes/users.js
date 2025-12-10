@@ -1,5 +1,6 @@
 import { Router } from "express";
 import userData from "../data/users.js";
+import restaurantData from "../data/restaurants.js";
 
 const router = Router();
 
@@ -11,7 +12,13 @@ const requireAuth = (req, res, next) => {
 router.get("/profile", requireAuth, async (req, res) => {
   try {
     const user = await userData.getUserById(req.session.user._id);
-    res.render("users/profile", { title: "My Profile", user });
+    const reviews = await userData.getUserReviews(req.session.user._id);
+    const reviewsWithRestaurantInfo = [];
+    for (let review of reviews) {
+      let restaurant = await restaurantData.getRestaurantById(review.restaurantId);
+      reviewsWithRestaurantInfo.push({...review, restaurantName: restaurant.name});
+    }
+    res.render("users/profile", { title: "My Profile", user, reviews: reviewsWithRestaurantInfo });
   } catch (e) {
     res.status(500).render("error", { title: "Error", error: e.message, user: req.session?.user || null });
   }
@@ -54,6 +61,15 @@ router.delete("/favorite/:id", requireAuth, async (req, res) => {
   try {
     const updatedUser = await userData.removeFavoriteRestaurant(req.session.user._id, req.params.id);
     req.session.user = updatedUser;
+    res.json({ success: true });
+  } catch (e) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+});
+
+router.delete("/review/:restaurantId", requireAuth, async (req, res) => {
+  try {
+    await userData.removeUserReview(req.session.user._id, req.params.restaurantId);
     res.json({ success: true });
   } catch (e) {
     res.status(400).json({ success: false, error: e.message });
