@@ -295,9 +295,35 @@ body {
 .restaurant-card__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+.restaurant-card__header .badge {
+  margin-left: auto;
+}
+
+.restaurant-favorite {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #ccc;
+  padding: 0;
+  line-height: 1;
+}
+
+.restaurant-favorite::before {
+  content: '★';
+}
+
+.restaurant-favorite.favorited {
+  color: #f1c40f;
+}
+
+.restaurant-favorite:hover {
+  color: #f39c12;
 }
 
 .restaurant-card__name {
@@ -728,12 +754,14 @@ body {
   border: 1px solid #e2e8f0;
   margin-top: 1rem;
   width: 100%;
+  justify-content: center;
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  justify-content: center;
 }
 
 .filter-group label {
@@ -749,6 +777,17 @@ body {
   background-color: white;
   font-size: 0.95rem;
   min-width: 150px;
+}
+
+.filter-group .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.filter-group .checkbox-label input {
+  cursor: pointer;
 }
 
 /* Filters Accordion */

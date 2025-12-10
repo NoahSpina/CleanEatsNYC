@@ -58,6 +58,17 @@
                                 {{/each}}
                             </select>
                         </div>
+
+                        {{#if user}}
+                        <div class="filter-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="favoritesOnly" value="true" {{#if
+                                    favoritesOnly}}checked{{/if}}
+                                    onchange="document.getElementById('sortForm').submit()">
+                                Show Favorites Only
+                            </label>
+                        </div>
+                        {{/if}}
                     </div>
 
                     <div class="sort-controls">
@@ -74,7 +85,7 @@
                                 document.getElementById('order').value = 'asc';
                             }
                             document.getElementById('sortForm').submit();
-                        " required>
+                        ">
                             <option value="name" {{#if (eq sort "name" )}}selected{{/if}}>Name</option>
                             <option value="rating" {{#if (eq sort "rating" )}}selected{{/if}}>Rating (Score)</option>
                             <option value="grade" {{#if (eq sort "grade" )}}selected{{/if}}>Latest Grade</option>
@@ -155,6 +166,8 @@
                         {{this.name}}
                     </a>
                 </h2>
+                <button class="restaurant-favorite {{#if this.isFavorite}}favorited{{/if}}"
+                    data-id="{{this._id}}"></button>
 
                 {{#if this.hasCleanStreakBadge}}
                 <span class="badge badge--clean">
@@ -211,6 +224,7 @@
     {{/if}}
 </div>
 
+{{!-- js to help with accordion and favorite button functionality --}}
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const accordion = document.getElementById('filtersAccordion');
@@ -221,6 +235,16 @@
                 const isOpen = accordion.open;
                 input.value = isOpen ? 'true' : '';
 
+                // Update URL without reloading so back/reload works correctly
+                const currentUrl = new URL(window.location.href);
+                if (isOpen) {
+                    currentUrl.searchParams.set('open', 'true');
+                } else {
+                    currentUrl.searchParams.delete('open');
+                }
+                // https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState 
+                window.history.replaceState({}, '', currentUrl);
+                // https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll
                 document.querySelectorAll('a.page-button').forEach(link => {
                     const url = new URL(link.href, window.location.origin);
                     if (isOpen) {

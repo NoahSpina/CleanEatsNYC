@@ -26,6 +26,9 @@ const constructorMethod = (app) => {
   // restaurant routes: /restaurants, /restaurants/:id
   app.use("/", restaurantRoutes);
 
+  // user routes: /profile, /favorite/:id
+  app.use("/", userRoutes);
+
   // analytics routes: /analytics
   app.use("/analytics", analyticsRoutes);
 
