@@ -23,7 +23,7 @@ import {
 } from "../helpers/validation.js";
 
 let exportedMethods = {
-  async getRestaurantsOnPage(page, limit, sortBy = "name", order = "asc", searchTerm = "") {
+  async getRestaurantsOnPage(page, limit, sortBy = "name", order = "asc", searchTerm = "", filterOptions = {}) {
     const restaurantCollection = await restaurants();
     const skip = (page - 1) * limit;
 
@@ -37,6 +37,16 @@ let exportedMethods = {
         // Simple regex search in mongo, case-insensitive (that's what the $options: "i" does)
         const validSearch = checkAndTrimString(searchTerm);
         query.name = { $regex: normalizeString(validSearch), $options: "i" };
+    }
+
+    if (filterOptions.borough) {
+        query.borough = checkAndTrimString(filterOptions.borough).toLowerCase();
+    }
+    if (filterOptions.cuisine) {
+        query.cuisine = checkAndTrimString(filterOptions.cuisine);
+    }
+    if (filterOptions.grade) {
+        query.latestGrade = checkAndTrimString(filterOptions.grade);
     }
 
     let sortQuery = { name: sortDirection };
@@ -207,6 +217,32 @@ let exportedMethods = {
     }
 
     return restaurantCollection.find(query).toArray();
+  },
+
+  async getFilterOptions() {
+    /*
+        Inputs: N/A
+        
+        Purpose: To retrieve lists of all available boroughs, cuisines, and grades for filtering
+        
+        Returns: Object containing arrays of boroughs, cuisines, and grades
+    */
+    const restaurantCollection = await restaurants();
+    // Using aggregation to get distinct values efficiently
+    const boroughs = await restaurantCollection.distinct("borough");
+    const cuisines = await restaurantCollection.distinct("cuisine");
+    const grades = await restaurantCollection.distinct("latestGrade");
+
+    // Filter out null/empty values and sort
+    const cleanBoroughs = boroughs.filter(b => b).sort();
+    const cleanCuisines = cuisines.filter(c => c).sort();
+    const cleanGrades = grades.filter(g => g).sort();
+
+    return {
+        boroughs: cleanBoroughs,
+        cuisines: cleanCuisines,
+        grades: cleanGrades
+    };
   },
 
   async getRestaurantWithInspections(id) {

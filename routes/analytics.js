@@ -43,10 +43,13 @@ router.get("/ratings", ensureAuthenticated, async (req, res) => {
 
     // Get top 10 restaurants by rating
     const pipeline = [
+     // https://www.mongodb.com/docs/manual/reference/mql/aggregation-stages/
+     //https://www.mongodb.com/docs/manual/core/aggregation-pipeline/
       { $lookup: { from: "restaurants", localField: "restaurantId", foreignField: "_id", as: "restaurant" } },
       { $unwind: "$restaurant" },
       ...(Object.keys(filter).length > 0 ? [{ $match: filter }] : []),
       {
+        // https://www.mongodb.com/docs/manual/reference/operator/aggregation/group/
         $group: {
           _id: "$restaurantId",
           restaurantName: { $first: "$restaurant.name" },

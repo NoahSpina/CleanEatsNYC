@@ -30,14 +30,22 @@ router.route("/restaurants").get(async (req, res) => {
       search = req.query.search;
     }
 
+    const filters = {};
+    if (req.query.borough) filters.borough = req.query.borough;
+    if (req.query.cuisine) filters.cuisine = req.query.cuisine;
+    if (req.query.grade) filters.grade = req.query.grade;
+
     let page = parseInt(req.query.page, 10);
     if (isNaN(page) || page < 1) {
       page = 1;
     }
 
+    // Get filter options for dropdowns
+    const filterOptionsList = await restaurantData.getFilterOptions();
+
     const limit = 50;
     const { restaurantList, restaurantCount } =
-      await restaurantData.getRestaurantsOnPage(page, limit, sort, order, search);
+      await restaurantData.getRestaurantsOnPage(page, limit, sort, order, search, filters);
     const totalPages = Math.ceil(restaurantCount / limit);
 
     const buildUrl = (newPage, newSort, newOrder, newSearch) => {
@@ -54,8 +62,17 @@ router.route("/restaurants").get(async (req, res) => {
         params.push("order=" + newOrder);
       }
       if (newSearch) {
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
         // need to use encodeURIComponent because special characters might break URL, but not with encodeURIComponent
         params.push("search=" + encodeURIComponent(newSearch));
+      }
+      if (filters.borough) params.push("borough=" + encodeURIComponent(filters.borough));
+      if (filters.cuisine) params.push("cuisine=" + encodeURIComponent(filters.cuisine));
+      if (filters.grade) params.push("grade=" + encodeURIComponent(filters.grade));
+      
+      // keeps track of the accordion (if its open or closed)
+      if (req.query.open) {
+        params.push("open=" + req.query.open);
       }
       
       if (params.length > 0) {
@@ -78,6 +95,11 @@ router.route("/restaurants").get(async (req, res) => {
       sort,
       order,
       search,
+      filterOptions: filterOptionsList,
+      selectedBorough: filters.borough,
+      selectedCuisine: filters.cuisine,
+      selectedGrade: filters.grade,
+      accordionOpen: req.query.open === 'true',
       hasPrevPage,
       hasNextPage,
       prevPage,

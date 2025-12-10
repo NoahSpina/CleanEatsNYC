@@ -14,6 +14,7 @@ app.engine(
     helpers: {
       eq: (a, b) => a === b,
       ne: (a, b) => a !== b,
+      or: (a, b, c) => a || b || c,
     },
   })
 );

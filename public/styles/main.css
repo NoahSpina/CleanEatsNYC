@@ -638,12 +638,17 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
   margin-bottom: 2rem;
   padding: 1rem;
   background-color: #f8fafc;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
+}
+
+.accordion-wrapper {
+  flex-basis: 100%;
+  width: 100%;
 }
 
 .search-container {
@@ -689,4 +694,101 @@ body {
   border-radius: 4px;
   background-color: white;
   font-size: 0.95rem;
+}
+
+/* Filters Container */
+.filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f1f5f9;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.filter-group select {
+  padding: 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 0.95rem;
+  min-width: 150px;
+}
+
+/* Filters Accordion */
+.filters-accordion {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin: 1rem 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.filters-summary {
+  background-color: #f8fafc;
+  padding: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: #334155;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+/* Accordion design for the filters */
+.filters-summary:hover {
+  background-color: #f1f5f9;
+}
+
+.icon-chevron {
+  /* https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/transform */
+  transition: transform 0.3s ease;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* only targets the icon when accordion is open. that's what the [open] does */
+.filters-accordion[open] .icon-chevron {
+  transform: rotate(180deg);
+}
+
+.filters-content {
+  padding: 1rem;
+  border-top: 1px solid #e2e8f0;
+  /* https://dzone.com/articles/pure-css-slide-down-animation-1 */
+  animation: slideDown 0.3s ease-out;
+}
+
+.filters-container,
+.sort-controls {
+  margin: 0;
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.sort-controls {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #cbd5e1;
 }
