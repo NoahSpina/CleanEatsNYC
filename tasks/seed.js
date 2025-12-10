@@ -186,6 +186,10 @@ const sampleReviewTexts = [
   "Could use some improvement in service.",
 ];
 
+const sampleReviewTitles = [
+
+]
+
 const allRestaurants = await restaurantsCollection.find({}).toArray();
 const reviewDocs = [];
 
@@ -211,9 +215,10 @@ for (const restaurant of allRestaurants) {
       restaurantId: restaurant._id,
       userId: new ObjectId(), // Dummy user ID for seed data
       rating: rating,
-      reviewText: reviewText,
+      title: 'Example Review',
+      body: reviewText,
       createdAt: createdAt,
-      updatedAt: createdAt,
+      updatedAt: createdAt
     });
   }
 }

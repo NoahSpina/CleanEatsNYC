@@ -1,4 +1,5 @@
 import { users } from "../config/mongoCollections.js";
+import { reviews } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
 import {
   checkAndTrimString,
@@ -309,6 +310,153 @@ let exportedMethods = {
 
     return await this.getUserById(userId);
   },
+
+  async addUserReview(userId, restaurantId, rating, title, body, photos = []) {
+    //validate ids
+    console.log("-------------testing----------------");
+    userId = checkId(userId);
+    restaurantId = checkId(restaurantId);
+    //validate ratings
+    rating = Number(rating);
+    if (!rating || typeof rating !== "number" || rating < 1 || rating > 5) {
+      throw new Error("Rating must be a number between 1 and 5");
+    }
+    //Validate review text
+    title = checkAndTrimString(title, "review title");
+    body = checkAndTrimString(body, "review body");
+    //Validate phots
+    if(!Array.isArray(photos)) throw new Error("Photos must be in a array");
+    photos = photos.map ((p, i) => {
+      if (typeof p !== 'object' || p === null || Array.isArray(p)) {
+        throw new Error(`Error: Review at index ${i} must be a array`);
+      } 
+      return {
+        url: checkAndTrimString(p.url, `index ${i} photo url`),
+        alt: checkAndTrimString(p.alt, `index ${i} photo alt`)
+      }
+    });
+    //Retrieve DB and check for more than one review
+    const usersCol = await users();
+    const reviewsCol = await reviews();
+
+    const user = await usersCol.findOne({ _id: new ObjectId(userId) });
+    if (!user) throw new Error(`User with id ${userId} not found`);
+
+    const isDuplicate = await reviewsCol.findOne( {
+      userId: new ObjectId(userId),
+      restaurantId: new ObjectId(restaurantId)
+    });
+
+    if (isDuplicate) throw Error("Users may only have one review per resturant");
+
+    const now = new Date();
+
+    const userReview = {
+      restaurantId: new ObjectId(restaurantId),
+      userId: new ObjectId(userId),
+      rating,
+      title,
+      body,
+      photos,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    const insert = await reviewsCol.insertOne(userReview);
+    if (!insert.insertedId) throw new Error("Error: Could not add review");
+    
+    return {
+      _id: insert.insertedId.toString(),
+      userId,
+      restaurantId,
+      rating,
+      title,
+      body,
+      photos,
+      createdAt: now,
+      updatedAt: now
+    };
+  },
+  async removeUserReview(userId, restaurantId) {
+    //validate ids
+    userId = checkId(userId);
+    restaurantId = checkId(restaurantId);
+
+    const usersCol = await users();
+    const reviewsCol = await reviews();
+
+    const user = await usersCol.findOne({ _id: new ObjectId(userId) });
+    if (!user) throw new Error(`User with id ${userId} not found`);
+
+    const review = await reviewsCol.findOne({
+      userId: new ObjectId(userId),
+      restaurantId: new ObjectId(restaurantId)
+    });
+
+    if (!review) throw new Error('Error: No resturant review was found for that user');
+
+    const deletedReview = await reviewsCol.deleteOne({
+      userId: new ObjectId(userId),
+      restaurantId: new ObjectId(restaurantId)
+    });
+
+    if (deletedReview.deletedCount === 0) throw new Error("Error: Failed to delete review");
+
+    return {
+      reviewRemoved: true,
+      userId,
+      restaurantId
+    }
+  },
+  async getReviewByUser(userId, restaurantId) {
+    userId = checkId(userId);
+    restaurantId = checkId(restaurantId);
+
+    const usersCol = await users();
+    const reviewsCol = await reviews();
+
+    const user = await usersCol.findOne({ _id: new ObjectId(userId) });
+    if (!user) throw new Error(`User with id ${userId} not found`);
+
+    const review = await reviewsCol.findOne({
+      userId: new ObjectId(userId),
+      restaurantId: new ObjectId(restaurantId)
+    });
+
+    if (!review) throw new Error('Error: No resturant review was found for that user');
+
+    return {
+      ...review,
+      _id: review._id.toString(),
+      restaurantId: review.restaurantId.toString(),
+      userId: review.userId.toString()
+    };
+  },
+  async getUserReviews(userId) {
+    userId = checkId(userId);
+
+    const reviewsCol = await reviews();
+    const usersCol = await users();
+
+    const user = await usersCol.findOne({ _id: new ObjectId(userId) });
+    if (!user) throw new Error(`User with id ${userId} not found`);
+
+    const userReviews = await reviewsCol.find({ userId: new ObjectId(userId) }).toArray();
+
+    if (!userReviews || userReviews.length === 0) return [];
+
+    return userReviews.map((review) => ({
+    _id: review._id.toString(),
+    userId: review.userId.toString(),
+    restaurantId: review.restaurantId.toString(),
+    rating: review.rating,
+    title: review.title,
+    body: review.body,
+    photos: review.photos,
+    createdAt: review.createdAt,
+    updatedAt: review.updatedAt
+    }));
+  }
 };
 
 export default exportedMethods;
