@@ -372,6 +372,46 @@ let exportedMethods = {
       throw new Error(`Failed to delete restaurant with id ${id}`);
     return { deleted: true };
   },
+  async getAllReviewsForRestaurant(restaurantId) {
+    /*
+        Inputs:
+            - id: restaurant id string
+        
+        Purpose: To remove a restaurant from the database
+
+        Returns: A object confirming the deletion
+    */
+
+    restaurantId = checkId(restaurantId);
+
+    const restaurantCollection = await restaurants();
+    const reviewsCollection = await reviews();
+    const usersCollection = await users();
+
+    const restaurant = await restaurantCollection.findOne({_id: new ObjectId(restaurantId)});
+    if (!restaurant) throw new Error(`Restaurant with the id ${restaurantId} could not be found`);
+    const reviewList = await reviewsCollection.find({ restaurantId: new ObjectId(restaurantId) }).sort({ createdAt: -1 }).toArray();
+    if (reviewList.length === 0) return [];
+
+    const reviewsOutput = [];
+
+    for (const review of reviewList) {
+      const user = await usersCollection.findOne({ _id: review.userId });
+      
+      reviewsOutput.push({
+        _id: review._id.toString(),
+        restaurantId: review.restaurantId.toString(),
+        userId: review.userId.toString(),
+        rating: review.rating,
+        title: review.title,
+        body: review.body,
+        photos: review.photos,
+        createdAt: review.createdAt,
+        updatedAt: review.updatedAt
+      });
+    }
+    return reviewsOutput;
+  },
 };
 
 export default exportedMethods;

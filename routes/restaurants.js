@@ -2,6 +2,8 @@ import restaurantData from "../data/restaurants.js";
 import { Router } from "express";
 import { checkId } from "../helpers/validation.js";
 import inspectionData from "../data/inspections.js";
+import userData from "../data/users.js";
+import images from "../middleware/images.js";
 
 const router = Router();
 
@@ -121,11 +123,14 @@ router.route("/restaurants/:id").get(async (req, res) => {
 
     const restaurant = await restaurantData.getRestaurantById(id);
     const inspections = await inspectionData.getInspectionsByRestaurant(id);
+    const reviews = await restaurantData.getAllReviewsForRestaurant(id);
 
     res.render("restaurants/restaurantsId", {
       title: restaurant.name,
       restaurant,
       inspections,
+      reviews,   
+      user: req.session.user
     });
   } catch (e) {
     let errorMessage = "Restaurant not found";
@@ -133,6 +138,50 @@ router.route("/restaurants/:id").get(async (req, res) => {
       errorMessage = e.message;
     }
     res.status(404).render("error", { title: "Error", error: errorMessage });
+  }
+});
+
+
+router.route("/restaurants/:id").post(images.array("photos"), async (req, res) => {
+  //https://www.npmjs.com/package/multer
+  if (!req.session.user) {
+    return res.status(403).render("error", {
+      title: "Forbidden",
+      error: "You must be logged in to submit a review."
+    });
+  }
+  let restaurantId = req.params.id;
+
+  try {
+    restaurantId = checkId(restaurantId);
+    const userId = req.session.user._id;
+    const { rating, title, body, photoDescriptions = "" } = req.body;
+    let photos = [];
+    if (req.files && req.files.length > 0) {
+      let altTexts = [];
+      if (photoDescriptions && photoDescriptions.trim().length > 0) {
+          altTexts = photoDescriptions.split("\n").map((text) => text.trim()).filter((text) => text.length > 0);
+      }
+      photos = req.files.map((file, index) => ({
+        url: `/uploads/${file.filename}`,
+          alt: altTexts[index] || "" 
+      }));
+    }
+    
+
+    await userData.addUserReview(userId, restaurantId, rating, title, body, photos);
+
+    return res.redirect(`/restaurants/${restaurantId}`);
+  } catch (e) {
+    const restaurant = await restaurantData.getRestaurantById(restaurantId);
+    const reviews = await restaurantData.getAllReviewsForRestaurant(restaurantId);
+    return res.status(400).render("restaurants/restaurantsId", {
+        title: restaurant.name,
+        restaurant,
+        reviews,
+        user: req.session.user,
+        error: e.message
+      });
   }
 });
 

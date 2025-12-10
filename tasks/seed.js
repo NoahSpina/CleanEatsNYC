@@ -214,7 +214,8 @@ for (const restaurant of allRestaurants) {
       _id: new ObjectId(),
       restaurantId: restaurant._id,
       userId: new ObjectId(), // Dummy user ID for seed data
-      rating: rating,
+      title: 'Example Review',
+      body: reviewText,
       reviewText: reviewText,
       createdAt: createdAt,
       updatedAt: createdAt,
