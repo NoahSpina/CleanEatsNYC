@@ -966,3 +966,11 @@ body {
   color: #5e2c86;
   text-decoration: none;
 }
+
+.favorites-list {
+  color: #5e2c86;
+  font-weight: bold;
+  font: 1.5rem;
+  text-decoration: none;
+  padding-top: .5px;
+}

@@ -18,7 +18,12 @@ router.get("/profile", requireAuth, async (req, res) => {
       let restaurant = await restaurantData.getRestaurantById(review.restaurantId);
       reviewsWithRestaurantInfo.push({...review, restaurantName: restaurant.name});
     }
-    res.render("users/profile", { title: "My Profile", user, reviews: reviewsWithRestaurantInfo });
+    let favorites = [];
+    if (user.favorites && user.favorites.length > 0) {
+      const favoritePromises = user.favorites.filter(id => id).map(id => restaurantData.getRestaurantById(id.toString()));
+      favorites = await Promise.all(favoritePromises);
+    }
+    res.render("users/profile", { title: "My Profile", user, favorites, reviews: reviewsWithRestaurantInfo });
   } catch (e) {
     res.status(500).render("error", { title: "Error", error: e.message, user: req.session?.user || null });
   }

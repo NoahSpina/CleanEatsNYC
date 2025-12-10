@@ -10,8 +10,21 @@
         </div>
         <br>
         <div class="profile-actions">
-            <a href="/favorites" class="btn-primary">View Favorites</a>
             <a href="/profile/edit" class="btn-primary">Edit Profile</a>
+            <br>
+            <br>
+            {{#if favorites.length}}
+                <h2>My Favorites:</h2>
+                <ul class="favorites-list">
+                    {{#each favorites}}
+                        <li><a href="/restaurants/{{this._id}}" class="favorites-list">{{this.name}}</a></li>
+                    {{/each}}
+                </ul>
+            {{else}}
+                <h2>No Favorites Yet:</h2>
+                <br>
+                <a href="/restaurants" class="btn-primary">Find Restaurants to Favorite</a>
+            {{/if}}
         </div>
     {{/if}}
     <br>
