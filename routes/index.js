@@ -1,6 +1,7 @@
 import authRoutes from "./auth.js";
 import restaurantRoutes from "./restaurants.js";
 import analyticsRoutes from "./analytics.js";
+import userRoutes from "./users.js";
 
 const constructorMethod = (app) => {
   app.use((req, res, next) => {
@@ -22,6 +23,9 @@ const constructorMethod = (app) => {
 
   // restaurant routes: /restaurants, /restaurants/:id
   app.use("/", restaurantRoutes);
+
+  // user routes: /profile, /favorite/:id
+  app.use("/", userRoutes);
 
   // analytics routes: /analytics
   app.use("/analytics", analyticsRoutes);

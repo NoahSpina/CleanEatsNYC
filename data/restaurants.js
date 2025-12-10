@@ -48,6 +48,10 @@ let exportedMethods = {
     if (filterOptions.grade) {
         query.latestGrade = checkAndTrimString(filterOptions.grade);
     }
+    if (filterOptions.ids) {
+      // only shows restaurants with ids in the user.favorites array (stored in mongo)
+        query._id = { $in: filterOptions.ids.map(id => new ObjectId(id)) };
+    }
 
     let sortQuery = { name: sortDirection };
     

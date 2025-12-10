@@ -40,18 +40,10 @@ router.post("/profile", requireAuth, async (req, res) => {
   }
 });
 
-router.get("/favorites", requireAuth, async (req, res) => {
-  try {
-    const user = await userData.getUserById(req.session.user._id);
-    res.render("users/favorites", { title: "My Favorites", user, favorites: user.favorites || [] });
-  } catch (e) {
-    res.status(500).render("error", { title: "Error", error: e.message, user: req.session?.user || null });
-  }
-});
-
 router.post("/favorite/:id", requireAuth, async (req, res) => {
   try {
-    await userData.addFavoriteRestaurant(req.session.user._id, req.params.id);
+    const updatedUser = await userData.addFavoriteRestaurant(req.session.user._id, req.params.id);
+    req.session.user = updatedUser;
     res.json({ success: true });
   } catch (e) {
     res.status(400).json({ success: false, error: e.message });
@@ -60,7 +52,8 @@ router.post("/favorite/:id", requireAuth, async (req, res) => {
 
 router.delete("/favorite/:id", requireAuth, async (req, res) => {
   try {
-    await userData.removeFavoriteRestaurant(req.session.user._id, req.params.id);
+    const updatedUser = await userData.removeFavoriteRestaurant(req.session.user._id, req.params.id);
+    req.session.user = updatedUser;
     res.json({ success: true });
   } catch (e) {
     res.status(400).json({ success: false, error: e.message });

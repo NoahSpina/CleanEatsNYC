@@ -34,6 +34,13 @@ router.route("/restaurants").get(async (req, res) => {
     if (req.query.borough) filters.borough = req.query.borough;
     if (req.query.cuisine) filters.cuisine = req.query.cuisine;
     if (req.query.grade) filters.grade = req.query.grade;
+    
+    // favorites filter
+    let favoritesOnly = false;
+    if (req.query.favoritesOnly === 'true' && req.session.user && req.session.user.favorites) {
+        favoritesOnly = true;
+        filters.ids = req.session.user.favorites;
+    }
 
     let page = parseInt(req.query.page, 10);
     if (isNaN(page) || page < 1) {
@@ -46,6 +53,15 @@ router.route("/restaurants").get(async (req, res) => {
     const limit = 50;
     const { restaurantList, restaurantCount } =
       await restaurantData.getRestaurantsOnPage(page, limit, sort, order, search, filters);
+
+    // checks for favorites
+    if (req.session.user.favorites) {
+      const userFavorites = req.session.user.favorites.map(id => id.toString());
+      restaurantList.forEach(restaurant => {
+        restaurant.isFavorite = userFavorites.includes(restaurant._id.toString());
+      });
+    }
+
     const totalPages = Math.ceil(restaurantCount / limit);
 
     const buildUrl = (newPage, newSort, newOrder, newSearch) => {
@@ -69,6 +85,7 @@ router.route("/restaurants").get(async (req, res) => {
       if (filters.borough) params.push("borough=" + encodeURIComponent(filters.borough));
       if (filters.cuisine) params.push("cuisine=" + encodeURIComponent(filters.cuisine));
       if (filters.grade) params.push("grade=" + encodeURIComponent(filters.grade));
+      if (favoritesOnly) params.push("favoritesOnly=true");
       
       // keeps track of the accordion (if its open or closed)
       if (req.query.open) {
@@ -99,6 +116,7 @@ router.route("/restaurants").get(async (req, res) => {
       selectedBorough: filters.borough,
       selectedCuisine: filters.cuisine,
       selectedGrade: filters.grade,
+      favoritesOnly,
       accordionOpen: req.query.open === 'true',
       hasPrevPage,
       hasNextPage,
@@ -120,6 +138,12 @@ router.route("/restaurants/:id").get(async (req, res) => {
     id = checkId(id);
 
     const restaurant = await restaurantData.getRestaurantById(id);
+    
+    // checks if this restaurant is a user's favorite
+    if (req.session.user.favorites) {
+      restaurant.isFavorite = req.session.user.favorites.some(favId => favId.toString() === id);
+    }
+
     const inspections = await inspectionData.getInspectionsByRestaurant(id);
 
     res.render("restaurants/restaurantsId", {

@@ -4,7 +4,11 @@
 
     <section class="restaurant-detail">
         <header class="restaurant-detail__header">
-            <h1 class="restaurant-detail__name">{{restaurant.name}}</h1>
+            <h1 class="restaurant-detail__name">
+                {{restaurant.name}}
+                <button class="restaurant-favorite {{#if restaurant.isFavorite}}favorited{{/if}}"
+                    data-id="{{restaurant._id}}"></button>
+            </h1>
 
             {{#if restaurant.hasCleanStreakBadge}}
             <span class="badge badge--clean">
@@ -43,25 +47,25 @@
 
     <section class="restaurant-inspections">
         <h2>Inspections</h2>
-        
+
         <br>
 
         {{#if inspections.length}}
-            <ul class="inspection-list">
-                {{#each inspections}}
-                    <li class="inspection-item">
-                    {{!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details --}}
-                    <details>
-                        <summary class="inspection-summary">
-                            <span class="inspection-label">
-                                Inspection 
-                            </span>
-                            <span class="inspection-date">
-                                {{#if this.inspectionDate}}{{this.inspectionDate}}{{else}}{{this.inspectionDate}}{{/if}}
-                            </span>
-                        </summary>
+        <ul class="inspection-list">
+            {{#each inspections}}
+            <li class="inspection-item">
+                {{!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details --}}
+                <details>
+                    <summary class="inspection-summary">
+                        <span class="inspection-label">
+                            Inspection
+                        </span>
+                        <span class="inspection-date">
+                            {{#if this.inspectionDate}}{{this.inspectionDate}}{{else}}{{this.inspectionDate}}{{/if}}
+                        </span>
+                    </summary>
 
-                        <div class="inspection-body">
+                    <div class="inspection-body">
                         <p>Grade:
                             {{#if this.grade}}{{this.grade}}{{else}}N/A{{/if}}
                         </p>
@@ -70,34 +74,34 @@
                         </p>
 
                         {{#if this.violations.length}}
-                            <h3>Violations</h3>
-                            <ul class="inspection-violations">
+                        <h3>Violations</h3>
+                        <ul class="inspection-violations">
                             {{#each this.violations}}
-                                <li class="violation-row">
+                            <li class="violation-row">
                                 <p class="violation-code">
                                     Code: {{this.code}}
                                 </p>
                                 <p class="violation-description">
                                     {{this.description}}
                                 </p>
-                                </li>
+                            </li>
                             {{/each}}
-                            </ul>
+                        </ul>
                         {{else}}
-                            <p>No violations for this inspection.</p>
+                        <p>No violations for this inspection.</p>
                         {{/if}}
-                        </div>
-                    </details>
-                    </li>
-                {{/each}}
-            </ul>
+                    </div>
+                </details>
+            </li>
+            {{/each}}
+        </ul>
         {{else}}
-            <p>No inspections found.</p>
+        <p>No inspections found.</p>
         {{/if}}
     </section>
 
     {{!-- TODO: reviews + comments --}}
 </div>
 {{else}}
-    <p>Restaurant not found.</p>
+<p>Restaurant not found.</p>
 {{/if}}
