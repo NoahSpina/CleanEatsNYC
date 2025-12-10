@@ -23,13 +23,20 @@ import {
 } from "../helpers/validation.js";
 
 let exportedMethods = {
-  async getRestaurantsOnPage(page, limit, sortBy = "name", order = "asc") {
+  async getRestaurantsOnPage(page, limit, sortBy = "name", order = "asc", searchTerm = "") {
     const restaurantCollection = await restaurants();
     const skip = (page - 1) * limit;
 
     let sortDirection = 1;
     if (order === "desc") {
       sortDirection = -1;
+    }
+
+    let query = {};
+    if (searchTerm) {
+        // Simple regex search in mongo, case-insensitive (that's what the $options: "i" does)
+        const validSearch = checkAndTrimString(searchTerm);
+        query.name = { $regex: normalizeString(validSearch), $options: "i" };
     }
 
     let sortQuery = { name: sortDirection };
@@ -42,12 +49,12 @@ let exportedMethods = {
       sortQuery = { latestInspectionDate: sortDirection, name: 1 };
     }
 
-    const restaurantCount = await restaurantCollection.countDocuments({});
+    const restaurantCount = await restaurantCollection.countDocuments(query);
     let restaurantList;
 
     if (sortBy === "rating" || sortBy === "grade" || sortBy === "inspectionDate") {
       restaurantList = await restaurantCollection
-        .find({})
+        .find(query)
         .toArray();
       const withData = restaurantList.filter(r => {
         if (sortBy === "rating") {
@@ -105,7 +112,7 @@ let exportedMethods = {
       restaurantList = [...withData, ...withoutData];
     } else {
       restaurantList = await restaurantCollection
-        .find({})
+        .find(query)
         .sort(sortQuery)
         .toArray();
     }

@@ -25,6 +25,11 @@ router.route("/restaurants").get(async (req, res) => {
       }
     }
 
+    let search = "";
+    if (req.query.search) {
+      search = req.query.search;
+    }
+
     let page = parseInt(req.query.page, 10);
     if (isNaN(page) || page < 1) {
       page = 1;
@@ -32,10 +37,10 @@ router.route("/restaurants").get(async (req, res) => {
 
     const limit = 50;
     const { restaurantList, restaurantCount } =
-      await restaurantData.getRestaurantsOnPage(page, limit, sort, order);
+      await restaurantData.getRestaurantsOnPage(page, limit, sort, order, search);
     const totalPages = Math.ceil(restaurantCount / limit);
 
-    const buildUrl = (newPage, newSort, newOrder) => {
+    const buildUrl = (newPage, newSort, newOrder, newSearch) => {
       let url = "/restaurants";
       const params = [];
       
@@ -45,8 +50,12 @@ router.route("/restaurants").get(async (req, res) => {
       if (newSort !== "name") {
         params.push("sort=" + newSort);
       }
-      if (newOrder !== "asc") {
+      if (newOrder) {
         params.push("order=" + newOrder);
+      }
+      if (newSearch) {
+        // need to use encodeURIComponent because special characters might break URL, but not with encodeURIComponent
+        params.push("search=" + encodeURIComponent(newSearch));
       }
       
       if (params.length > 0) {
@@ -68,6 +77,7 @@ router.route("/restaurants").get(async (req, res) => {
       totalPages,
       sort,
       order,
+      search,
       hasPrevPage,
       hasNextPage,
       prevPage,

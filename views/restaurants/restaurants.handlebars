@@ -4,67 +4,76 @@
     </header>
 
     <form method="GET" action="/restaurants" class="sort-form" id="sortForm">
-        <label for="sort">Sort by:</label>
-        <select name="sort" id="sort" onchange="
-            var currentSort = '{{sort}}';
-            if (this.value === 'rating' && this.value !== currentSort) {
-                document.getElementById('order').value = 'desc';
-            } else if (this.value === 'grade' && this.value !== currentSort) {
-                document.getElementById('order').value = 'asc';
-            } else if (this.value === 'inspectionDate' && this.value !== currentSort) {
-                document.getElementById('order').value = 'desc';
-            } else if (this.value === 'name' && this.value !== currentSort) {
-                document.getElementById('order').value = 'asc';
-            }
-            document.getElementById('sortForm').submit();
-        " required>
-            <option value="name" {{#if (eq sort "name")}}selected{{/if}}>Name</option>
-            <option value="rating" {{#if (eq sort "rating")}}selected{{/if}}>Rating (Score)</option>
-            <option value="grade" {{#if (eq sort "grade")}}selected{{/if}}>Latest Grade</option>
-            <option value="inspectionDate" {{#if (eq sort "inspectionDate")}}selected{{/if}}>Latest Inspection Date</option>
-        </select>
-        
-        <label for="order">Order:</label>
-        <select name="order" id="order" onchange="
-            var sortSelect = document.getElementById('sort');
-            if (!sortSelect.value || sortSelect.value === '') {
-                sortSelect.value = 'name';
-            }
-            document.getElementById('sortForm').submit();
-        ">
-            {{#if (eq sort "rating")}}
+        <div class="search-container">
+            <label for="search">Search:</label>
+            <input type="text" name="search" id="search" placeholder="Search restaurants by name" value="{{search}}">
+            <button type="submit" class="search-button">Search</button>
+        </div>
+
+        <div class="sort-controls">
+            <label for="sort">Sort by:</label>
+            <select name="sort" id="sort" onchange="
+                var currentSort = '{{sort}}';
+                if (this.value === 'rating' && this.value !== currentSort) {
+                    document.getElementById('order').value = 'desc';
+                } else if (this.value === 'grade' && this.value !== currentSort) {
+                    document.getElementById('order').value = 'asc';
+                } else if (this.value === 'inspectionDate' && this.value !== currentSort) {
+                    document.getElementById('order').value = 'desc';
+                } else if (this.value === 'name' && this.value !== currentSort) {
+                    document.getElementById('order').value = 'asc';
+                }
+                document.getElementById('sortForm').submit();
+            " required>
+                <option value="name" {{#if (eq sort "name" )}}selected{{/if}}>Name</option>
+                <option value="rating" {{#if (eq sort "rating" )}}selected{{/if}}>Rating (Score)</option>
+                <option value="grade" {{#if (eq sort "grade" )}}selected{{/if}}>Latest Grade</option>
+                <option value="inspectionDate" {{#if (eq sort "inspectionDate" )}}selected{{/if}}>Latest Inspection Date
+                </option>
+            </select>
+
+            <label for="order">Order:</label>
+            <select name="order" id="order" onchange="
+                var sortSelect = document.getElementById('sort');
+                if (!sortSelect.value || sortSelect.value === '') {
+                    sortSelect.value = 'name';
+                }
+                document.getElementById('sortForm').submit();
+            ">
+                {{#if (eq sort "rating")}}
                 {{#if order}}
-                    <option value="desc" {{#if (eq order "desc")}}selected{{/if}}>Highest Score First</option>
-                    <option value="asc" {{#if (eq order "asc")}}selected{{/if}}>Lowest Score First</option>
+                <option value="desc" {{#if (eq order "desc" )}}selected{{/if}}>Highest Score First</option>
+                <option value="asc" {{#if (eq order "asc" )}}selected{{/if}}>Lowest Score First</option>
                 {{else}}
-                    <option value="desc" selected>Highest Score First</option>
-                    <option value="asc">Lowest Score First</option>
+                <option value="desc" selected>Highest Score First</option>
+                <option value="asc">Lowest Score First</option>
                 {{/if}}
-            {{else if (eq sort "grade")}}
+                {{else if (eq sort "grade")}}
                 {{#if order}}
-                    <option value="asc" {{#if (eq order "asc")}}selected{{/if}}>Highest Grade First</option>
-                    <option value="desc" {{#if (eq order "desc")}}selected{{/if}}>Lowest Grade First</option>
+                <option value="asc" {{#if (eq order "asc" )}}selected{{/if}}>Highest Grade First</option>
+                <option value="desc" {{#if (eq order "desc" )}}selected{{/if}}>Lowest Grade First</option>
                 {{else}}
-                    <option value="asc" selected>Highest Grade First</option>
-                    <option value="desc">Lowest Grade First</option>
+                <option value="asc" selected>Highest Grade First</option>
+                <option value="desc">Lowest Grade First</option>
                 {{/if}}
-            {{else if (eq sort "inspectionDate")}}
-                <option value="desc" {{#if (eq order "desc")}}selected{{/if}}>Newest First</option>
-                <option value="asc" {{#if (eq order "asc")}}selected{{/if}}>Oldest First</option>
-            {{else}}
-                <option value="asc" {{#if (eq order "asc")}}selected{{/if}}>Ascending</option>
-                <option value="desc" {{#if (eq order "desc")}}selected{{/if}}>Descending</option>
-            {{/if}}
-        </select>
+                {{else if (eq sort "inspectionDate")}}
+                <option value="desc" {{#if (eq order "desc" )}}selected{{/if}}>Newest First</option>
+                <option value="asc" {{#if (eq order "asc" )}}selected{{/if}}>Oldest First</option>
+                {{else}}
+                <option value="asc" {{#if (eq order "asc" )}}selected{{/if}}>Ascending</option>
+                <option value="desc" {{#if (eq order "desc" )}}selected{{/if}}>Descending</option>
+                {{/if}}
+            </select>
+        </div>
     </form>
 
-{{#if restaurantList}}
+    {{#if restaurantList}}
     {{!-- Pagination on top and bottom --}}
     <nav class="pagination">
         {{#if hasPrevPage}}
-            <a class="page-button" href="{{buildUrl prevPage sort order}}">&larr; Previous</a>
+        <a class="page-button" href="{{buildUrl prevPage sort order search}}">&larr; Previous</a>
         {{else}}
-            <span class="page-button disabled">&larr; Previous</span>
+        <span class="page-button disabled">&larr; Previous</span>
         {{/if}}
 
         <span class="pagination__page-info">
@@ -72,9 +81,9 @@
         </span>
 
         {{#if hasNextPage}}
-            <a class="page-button" href="{{buildUrl nextPage sort order}}">Next &rarr;</a>
+        <a class="page-button" href="{{buildUrl nextPage sort order search}}">Next &rarr;</a>
         {{else}}
-            <span class="page-button disabled">Next &rarr;</span>
+        <span class="page-button disabled">Next &rarr;</span>
         {{/if}}
     </nav>
 
@@ -82,49 +91,49 @@
 
     <section class="restaurant-list">
         {{#each restaurantList}}
-            <article class="restaurant-card">
-                <header class="restaurant-card__header">
-                    <h2 class="restaurant-card__name">
-                        <a href="/restaurants/{{this._id}}">
-                            {{this.name}}
-                        </a>
-                    </h2>
+        <article class="restaurant-card">
+            <header class="restaurant-card__header">
+                <h2 class="restaurant-card__name">
+                    <a href="/restaurants/{{this._id}}">
+                        {{this.name}}
+                    </a>
+                </h2>
 
-                    {{#if this.hasCleanStreakBadge}}
-                        <span class="badge badge--clean">
-                            🏅 Clean streak
-                        </span>
-                    {{/if}}
-                </header>
+                {{#if this.hasCleanStreakBadge}}
+                <span class="badge badge--clean">
+                    🏅 Clean streak
+                </span>
+                {{/if}}
+            </header>
 
-                <p class="restaurant-card__meta">
-                    <span class="meta-pill">{{this.cuisine}}</span>
-                    <span class="meta-pill">{{this.borough}}</span>
-                </p>
+            <p class="restaurant-card__meta">
+                <span class="meta-pill">{{this.cuisine}}</span>
+                <span class="meta-pill">{{this.borough}}</span>
+            </p>
 
-                <dl class="restaurant-card__stats">
-                    <div class="stat-row">
-                        <dt>Latest Grade</dt>
-                        <dd>{{#if this.latestGrade}}{{this.latestGrade}}{{else}}N/A{{/if}}</dd>
-                    </div>
-                    <div class="stat-row">
-                        <dt>Latest Score</dt>
-                        <dd>{{#if this.latestScore}}{{this.latestScore}}{{else}}N/A{{/if}}</dd>
-                    </div>
-                    <div class="stat-row">
-                        <dt>Latest Inspection</dt>
-                        <dd>{{#if this.latestInspectionDate}}{{this.latestInspectionDate}}{{else}}N/A{{/if}}</dd>
-                    </div>
-                </dl>
-            </article>
+            <dl class="restaurant-card__stats">
+                <div class="stat-row">
+                    <dt>Latest Grade</dt>
+                    <dd>{{#if this.latestGrade}}{{this.latestGrade}}{{else}}N/A{{/if}}</dd>
+                </div>
+                <div class="stat-row">
+                    <dt>Latest Score</dt>
+                    <dd>{{#if this.latestScore}}{{this.latestScore}}{{else}}N/A{{/if}}</dd>
+                </div>
+                <div class="stat-row">
+                    <dt>Latest Inspection</dt>
+                    <dd>{{#if this.latestInspectionDate}}{{this.latestInspectionDate}}{{else}}N/A{{/if}}</dd>
+                </div>
+            </dl>
+        </article>
         {{/each}}
     </section>
 
     <nav class="pagination">
         {{#if hasPrevPage}}
-            <a class="page-button" href="{{buildUrl prevPage sort order}}">&larr; Previous</a>
+        <a class="page-button" href="{{buildUrl prevPage sort order search}}">&larr; Previous</a>
         {{else}}
-            <span class="page-button disabled">&larr; Previous</span>
+        <span class="page-button disabled">&larr; Previous</span>
         {{/if}}
 
         <span class="pagination__page-info">
@@ -132,12 +141,12 @@
         </span>
 
         {{#if hasNextPage}}
-            <a class="page-button" href="{{buildUrl nextPage sort order}}">Next &rarr;</a>
+        <a class="page-button" href="{{buildUrl nextPage sort order search}}">Next &rarr;</a>
         {{else}}
-            <span class="page-button disabled">Next &rarr;</span>
+        <span class="page-button disabled">Next &rarr;</span>
         {{/if}}
     </nav>
     {{else}}
-        <p>No restaurants found.</p>
+    <p>No restaurants found.</p>
     {{/if}}
 </div>
