@@ -20,6 +20,7 @@ app.engine(
       eq: (a, b) => a === b,
       ne: (a, b) => a !== b,
       or: (a, b, c) => a || b || c,
+      isLoggedIn: (user) => !!user,
     },
   })
 );
@@ -45,6 +46,11 @@ app.use(
 );
 
 app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  next();
+});
+
+app.use((req, res, next) => {
   const timestamp = new Date().toUTCString();
   const method = req.method;
   const route = req.originalUrl;
@@ -57,6 +63,13 @@ app.use((req, res, next) => {
 });
 
 app.use("/restaurants", (req, res, next) => {
+  if (!req.session.user) {
+    return res.redirect("/");
+  }
+  next();
+});
+
+app.use("/profile", (req, res, next) => {
   if (!req.session.user) {
     return res.redirect("/");
   }

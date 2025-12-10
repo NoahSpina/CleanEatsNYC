@@ -14,6 +14,12 @@ import {
   checkName,
 } from "../helpers/validation.js";
 import bcrypt from "bcrypt";
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const sanitizeUser = (user, override = {}) => ({
   _id: user._id.toString(),
@@ -393,6 +399,20 @@ let exportedMethods = {
     });
 
     if (!review) throw new Error('Error: No resturant review was found for that user');
+
+    if (review.photos && review.photos.length > 0) {
+      for (const photo of review.photos) {
+        try {
+          //https://nodejs.org/api/fs.html
+          const filename = photo.url.replace("/uploads/", "");
+          const filePath = path.join(__dirname, "..", "public", "uploads", filename);
+          await fs.unlink(filePath);
+          console.log("Deleted file:", filePath);
+        } catch (err) {
+          console.error("Failed to delete image:", err);
+        }
+      }
+  }
 
     const deletedReview = await reviewsCol.deleteOne({
       userId: new ObjectId(userId),
