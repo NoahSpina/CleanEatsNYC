@@ -7,24 +7,72 @@ const router = Router();
 
 router.route("/restaurants").get(async (req, res) => {
   try {
+    const validSorts = ["name", "rating", "grade", "inspectionDate"];
+    let sort = "name";
+    if (req.query.sort && validSorts.includes(req.query.sort)) {
+      sort = req.query.sort;
+    }
+
+    const validOrders = ["asc", "desc"];
+    let order = "asc";
+    if (req.query.order && validOrders.includes(req.query.order)) {
+      order = req.query.order;
+    } else if (req.query.sort && !req.query.order) {
+      if (sort === "inspectionDate" || sort === "rating") {
+        order = "desc";
+      } else {
+        order = "asc";
+      }
+    }
+
     let page = parseInt(req.query.page, 10);
-    if (isNaN(page) || page < 1) page = 1;
+    if (isNaN(page) || page < 1) {
+      page = 1;
+    }
 
     const limit = 50;
-
     const { restaurantList, restaurantCount } =
-      await restaurantData.getRestaurantsOnPage(page, limit);
+      await restaurantData.getRestaurantsOnPage(page, limit, sort, order);
     const totalPages = Math.ceil(restaurantCount / limit);
+
+    const buildUrl = (newPage, newSort, newOrder) => {
+      let url = "/restaurants";
+      const params = [];
+      
+      if (newPage > 1) {
+        params.push("page=" + newPage);
+      }
+      if (newSort !== "name") {
+        params.push("sort=" + newSort);
+      }
+      if (newOrder !== "asc") {
+        params.push("order=" + newOrder);
+      }
+      
+      if (params.length > 0) {
+        url = url + "?" + params.join("&");
+      }
+      
+      return url;
+    };
+
+    const hasPrevPage = page > 1;
+    const hasNextPage = page < totalPages;
+    const prevPage = page - 1;
+    const nextPage = page + 1;
 
     res.render("restaurants/restaurants", {
       title: "Restaurants",
       restaurantList,
       page,
       totalPages,
-      hasPrevPage: page > 1,
-      hasNextPage: page < totalPages,
-      prevPage: page - 1,
-      nextPage: page + 1,
+      sort,
+      order,
+      hasPrevPage,
+      hasNextPage,
+      prevPage,
+      nextPage,
+      buildUrl,
     });
   } catch (e) {
     res
@@ -48,7 +96,11 @@ router.route("/restaurants/:id").get(async (req, res) => {
       inspections,
     });
   } catch (e) {
-    res.status(404).render("error", { title: "Error", error: e?.message });
+    let errorMessage = "Restaurant not found";
+    if (e.message) {
+      errorMessage = e.message;
+    }
+    res.status(404).render("error", { title: "Error", error: errorMessage });
   }
 });
 

@@ -23,17 +23,95 @@ import {
 } from "../helpers/validation.js";
 
 let exportedMethods = {
-  async getRestaurantsOnPage(page, limit) {
+  async getRestaurantsOnPage(page, limit, sortBy = "name", order = "asc") {
     const restaurantCollection = await restaurants();
-    const skip = (page - 1) * limit; // for pagination.
-    const restaurantList = await restaurantCollection
-      .find({})
-      .sort({ name: 1 })
-      .skip(skip)
-      .limit(limit)
-      .toArray();
+    const skip = (page - 1) * limit;
+
+    let sortDirection = 1;
+    if (order === "desc") {
+      sortDirection = -1;
+    }
+
+    let sortQuery = { name: sortDirection };
+    
+    if (sortBy === "rating") {
+      sortQuery = { latestScore: sortDirection, name: 1 };
+    } else if (sortBy === "grade") {
+      sortQuery = { latestGrade: sortDirection, name: 1 };
+    } else if (sortBy === "inspectionDate") {
+      sortQuery = { latestInspectionDate: sortDirection, name: 1 };
+    }
+
     const restaurantCount = await restaurantCollection.countDocuments({});
-    return { restaurantList, restaurantCount };
+    let restaurantList;
+
+    if (sortBy === "rating" || sortBy === "grade" || sortBy === "inspectionDate") {
+      restaurantList = await restaurantCollection
+        .find({})
+        .toArray();
+      const withData = restaurantList.filter(r => {
+        if (sortBy === "rating") {
+          return r.latestScore !== null && r.latestScore !== undefined && typeof r.latestScore === "number";
+        }
+        if (sortBy === "grade") {
+          return r.latestGrade !== null && r.latestGrade !== undefined && r.latestGrade !== "";
+        }
+        if (sortBy === "inspectionDate") {
+          return r.latestInspectionDate !== null && r.latestInspectionDate !== undefined && r.latestInspectionDate !== "";
+        }
+        return true;
+      });
+      
+      const withoutData = restaurantList.filter(r => {
+        if (sortBy === "rating") {
+          return r.latestScore === null || r.latestScore === undefined || typeof r.latestScore !== "number";
+        }
+        if (sortBy === "grade") {
+          return r.latestGrade === null || r.latestGrade === undefined || r.latestGrade === "";
+        }
+        if (sortBy === "inspectionDate") {
+          return r.latestInspectionDate === null || r.latestInspectionDate === undefined || r.latestInspectionDate === "";
+        }
+        return false;
+      });
+
+      if (sortBy === "rating") {
+        withData.sort((a, b) => {
+          if (sortDirection === 1) {
+            return a.latestScore - b.latestScore || a.name.localeCompare(b.name);
+          } else {
+            return b.latestScore - a.latestScore || a.name.localeCompare(b.name);
+          }
+        });
+      } else if (sortBy === "grade") {
+        withData.sort((a, b) => {
+          if (sortDirection === 1) {
+            return a.latestGrade.localeCompare(b.latestGrade) || a.name.localeCompare(b.name);
+          } else {
+            return b.latestGrade.localeCompare(a.latestGrade) || a.name.localeCompare(b.name);
+          }
+        });
+      } else if (sortBy === "inspectionDate") {
+        withData.sort((a, b) => {
+          if (sortDirection === 1) {
+            return a.latestInspectionDate.localeCompare(b.latestInspectionDate) || a.name.localeCompare(b.name);
+          } else {
+            return b.latestInspectionDate.localeCompare(a.latestInspectionDate) || a.name.localeCompare(b.name);
+          }
+        });
+      }
+      
+      withoutData.sort((a, b) => a.name.localeCompare(b.name));
+      restaurantList = [...withData, ...withoutData];
+    } else {
+      restaurantList = await restaurantCollection
+        .find({})
+        .sort(sortQuery)
+        .toArray();
+    }
+    const paginatedList = restaurantList.slice(skip, skip + limit);
+    
+    return { restaurantList: paginatedList, restaurantCount };
   },
 
   async getAllRestaurants() {

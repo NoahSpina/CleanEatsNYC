@@ -11,6 +11,10 @@ app.engine(
   engine({
     defaultLayout: "main",
     layoutsDir: "./views/layouts/",
+    helpers: {
+      eq: (a, b) => a === b,
+      ne: (a, b) => a !== b,
+    },
   })
 );
 app.set("view engine", "handlebars");
