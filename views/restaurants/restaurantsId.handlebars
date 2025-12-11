@@ -104,87 +104,94 @@
         <h2>Reviews</h2>
 
         {{#if user}}
-            <button id="write-review-btn" class="write-review-btn">
+        {{!-- https://handlebarsjs.com/guide/builtin-helpers.html#unless --}}
+        {{#unless userHasReviewed}}
+        <button id="write-review-btn" class="write-review-btn">
             Write a Review
-            </button>
-            {{#if error}}
-            <div class="error-message">{{error}}</div>
-            {{/if}}
+        </button>
+        {{#if error}}
+        <div class="error-message">{{error}}</div>
+        {{/if}}
 
-            <form id="review-form" method="POST" action="/restaurants/{{restaurant._id}}" enctype="multipart/form-data" class="review-form">
-                <label for="rating">Rating (1–5)</label>
-                <select id="rating" name="rating" required>
-                    <option value="">Select a rating</option>
-                    <option value="1">1 — Poor</option>
-                    <option value="2">2 — Fair</option>
-                    <option value="3">3 — Good</option>
-                    <option value="4">4 — Very Good</option>
-                    <option value="5">5 — Excellent</option>
-                </select>
-                <br>
-                <label for="title">Title</label>
-                <br>
-                <input id="title" name="title" type="text" maxlength="80" required />
-                <br>
-                <label for="body">Review</label>
-                <br>
-                <textarea id="body" name="body" rows="5" maxlength="2000" required></textarea>
-                <br>
-                <label for="photos">Upload Photos (optional)</label>
-                <br>
-                <input type="file" id="photos" name="photos" accept="image/*" multiple />
-                <br>
-                <label for="photoDescriptions">Photo Descriptions (one per photo, in order)</label>
-                <br>
-                <textarea id="photoDescriptions" name="photoDescriptions" rows="3" placeholder="1. Resturant exterior 2. Picture of pizza"></textarea>
-                <br>
-                <button class="submit-review" type="submit">Submit Review</button>
-            </form>
+        <form id="review-form" method="POST" action="/restaurants/{{restaurant._id}}" enctype="multipart/form-data"
+            class="review-form">
+            <label for="rating">Rating (1–5)</label>
+            <select id="rating" name="rating" required>
+                <option value="">Select a rating</option>
+                <option value="1">1 — Poor</option>
+                <option value="2">2 — Fair</option>
+                <option value="3">3 — Good</option>
+                <option value="4">4 — Very Good</option>
+                <option value="5">5 — Excellent</option>
+            </select>
+            <br>
+            <label for="title">Title</label>
+            <br>
+            <input id="title" name="title" type="text" maxlength="80" required />
+            <br>
+            <label for="body">Review</label>
+            <br>
+            <textarea id="body" name="body" rows="5" maxlength="2000" required></textarea>
+            <br>
+            <label for="photos">Upload Photos (optional)</label>
+            <br>
+            <input type="file" id="photos" name="photos" accept="image/*" multiple />
+            <br>
+            <label for="photoDescriptions">Photo Descriptions (one per photo, in order)</label>
+            <br>
+            <textarea id="photoDescriptions" name="photoDescriptions" rows="3"
+                placeholder="1. Resturant exterior 2. Picture of pizza"></textarea>
+            <br>
+            <button class="submit-review" type="submit">Submit Review</button>
+        </form>
+        {{else}}
+        <p class="reviewed">Cannot create new review. You have already reviewed this restaurant.</p>
+        {{/unless}}
 
         {{else}}
-            <p class="login-required"><a href="/login">Sign in</a> to write a review.</p>
+        <p class="login-required"><a href="/login">Sign in</a> to write a review.</p>
         {{/if}}
 
         <div class="review-list">
             {{#if reviews.length}}
-                {{#each reviews}}
-                    <article class="review-card">
-                        <header class="review-header">
-                            <h3 class="review-title">{{this.title}}</h3>
+            {{#each reviews}}
+            <article class="review-card">
+                <header class="review-header">
+                    <h3 class="review-title">{{this.title}}</h3>
 
-                            <div class="review-meta">
-                                <span class="review-rating">
-                                    Rating: {{this.rating}}
-                                </span>
-                                <br>
-                                <span class="review-date">
-                                    {{this.createdAt}}
-                                </span>
-                            </div>
-                        </header>
+                    <div class="review-meta">
+                        <span class="review-rating">
+                            Rating: {{this.rating}}
+                        </span>
+                        <br>
+                        <span class="review-date">
+                            {{this.createdAt}}
+                        </span>
+                    </div>
+                </header>
 
-                        <p class="review-body">{{this.body}}</p>
+                <p class="review-body">{{this.body}}</p>
 
-                        {{#if this.photos.length}}
-                            <div class="review-photos">
-                                {{#each this.photos}}
-                                <figure class="review-photo-item">
-                                    <img src="{{this.url}}" alt="{{this.alt}}" class="review-photo" />
-                                    <figcaption>{{this.alt}}</figcaption>
-                                </figure>
-                                {{/each}}
-                            </div>
-                        {{/if}}
-                    </article>
-                {{/each}}
+                {{#if this.photos.length}}
+                <div class="review-photos">
+                    {{#each this.photos}}
+                    <figure class="review-photo-item">
+                        <img src="{{this.url}}" alt="{{this.alt}}" class="review-photo" />
+                        <figcaption>{{this.alt}}</figcaption>
+                    </figure>
+                    {{/each}}
+                </div>
+                {{/if}}
+            </article>
+            {{/each}}
             {{else}}
-                <p>No reviews yet.</p>
+            <p>No reviews yet.</p>
             {{/if}}
         </div>
     </section>
 </div>
 {{else}}
-    <p>Restaurant not found.</p>
+<p>Restaurant not found.</p>
 {{/if}}
 
 

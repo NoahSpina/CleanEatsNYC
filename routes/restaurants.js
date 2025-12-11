@@ -149,12 +149,18 @@ router.route("/restaurants/:id").get(async (req, res) => {
     const inspections = await inspectionData.getInspectionsByRestaurant(id);
     const reviews = await restaurantData.getAllReviewsForRestaurant(id);
 
+    let userHasReviewed = false;
+    if (req.session.user) {
+        userHasReviewed = reviews.some(review => review.userId === req.session.user._id);
+    }
+
     res.render("restaurants/restaurantsId", {
       title: restaurant.name,
       restaurant,
       inspections,
       reviews,   
-      user: req.session.user
+      user: req.session.user,
+      userHasReviewed
     });
   } catch (e) {
     let errorMessage = "Restaurant not found";
