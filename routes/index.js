@@ -2,6 +2,7 @@ import authRoutes from "./auth.js";
 import restaurantRoutes from "./restaurants.js";
 import analyticsRoutes from "./analytics.js";
 import userRoutes from "./users.js";
+import adminRoutes from "./admin.js";
 
 const constructorMethod = (app) => {
   app.use((req, res, next) => {
@@ -31,6 +32,9 @@ const constructorMethod = (app) => {
 
   // analytics routes: /analytics
   app.use("/analytics", analyticsRoutes);
+
+  // admin routes: /admin
+  app.use("/admin", adminRoutes);
 
   app.use("*splat", (req, res) => {
     res.status(404).render("error", {
