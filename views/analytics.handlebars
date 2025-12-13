@@ -26,6 +26,20 @@
                 <div class="loading">Loading ratings data...</div>
             </div>
         </div>
+
+        <div class="ratings-breakdown">
+            <h3>Ratings Breakdown</h3>
+            <div class="breakdown-grid">
+                <div class="chart-item">
+                    <h4>Average Rating by Borough</h4>
+                    <canvas id="boroughRatingsChart"></canvas>
+                </div>
+                <div class="chart-item">
+                    <h4>Average Rating by Cuisine (Top 15)</h4>
+                    <canvas id="cuisineRatingsChart"></canvas>
+                </div>
+            </div>
+        </div>
     </section>
 
     <section class="analytics-section">
@@ -53,6 +67,13 @@
                     <div class="loading">Loading grade data...</div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section class="analytics-section">
+        <h2>Comment Analytics</h2>
+        <div id="commentsContainer">
+            <div class="loading">Loading comment data...</div>
         </div>
     </section>
 </div>
