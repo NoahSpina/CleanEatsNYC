@@ -73,10 +73,14 @@ router.route("/restaurants").get(async (req, res) => {
       if (newPage > 1) {
         params.push("page=" + newPage);
       }
-      if (newSort !== "name") {
+      if (newSort && newSort !== "name") {
         params.push("sort=" + newSort);
-      }
-      if (newOrder) {
+        // need to include order so it doesn't reset when switching pages
+        if (newOrder) {
+          params.push("order=" + newOrder);
+        }
+      } else if (newSort === "name" && newOrder && newOrder !== "asc") {
+        // only add order if it's not the default
         params.push("order=" + newOrder);
       }
       if (newSearch) {
