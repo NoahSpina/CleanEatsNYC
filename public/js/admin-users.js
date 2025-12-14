@@ -10,10 +10,12 @@ function editUser(userId) {
     const username = row.querySelector('[data-field="username"]').textContent;
     const displayName = row.querySelector('[data-field="displayName"]').textContent;
     const email = row.querySelector('[data-field="email"]').textContent;
+    const role = row.cells[3].textContent;
     
     document.getElementById('editUsername').value = username;
     document.getElementById('editDisplayName').value = displayName;
     document.getElementById('editEmail').value = email;
+    document.getElementById('editRole').value = role;
     
     document.getElementById('editUserModal').style.display = 'block';
 }
@@ -63,22 +65,48 @@ document.getElementById('editUserForm').addEventListener('submit', async functio
         const response = await fetch(`/admin/users/${currentUserId}/edit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify({
+                username: data.username,
+                displayName: data.displayName,
+                email: data.email
+            })
         });
         
         const result = await response.json();
         
-        if (result.success) {
-            // Update the table row
-            const row = document.querySelector(`tr[data-user-id="${currentUserId}"]`);
-            row.querySelector('[data-field="username"]').textContent = data.username;
-            row.querySelector('[data-field="displayName"]').textContent = data.displayName;
-            row.querySelector('[data-field="email"]').textContent = data.email;
-            
-            closeModal();
-            alert('User updated successfully');
-        } else {
+        if (!result.success) {
             alert('Error: ' + result.error);
+            return;
+        }
+        
+        const row = document.querySelector(`tr[data-user-id="${currentUserId}"]`);
+        const currentRole = row.cells[3].textContent;
+        
+        if (data.role !== currentRole) {
+            const roleResponse = await fetch(`/admin/users/${currentUserId}/role`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: data.role })
+            });
+            
+            const roleResult = await roleResponse.json();
+            
+            if (!roleResult.success) {
+                alert('User info updated but role change failed: ' + roleResult.error);
+                return;
+            }
+        }
+        
+        row.querySelector('[data-field="username"]').textContent = data.username;
+        row.querySelector('[data-field="displayName"]').textContent = data.displayName;
+        row.querySelector('[data-field="email"]').textContent = data.email;
+        row.cells[3].textContent = data.role;
+        
+        closeModal();
+        alert('User updated successfully');
+        
+        if (data.role !== currentRole) {
+            location.reload();
         }
     } catch (error) {
         console.error('Edit user error:', error);

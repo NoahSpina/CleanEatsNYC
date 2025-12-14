@@ -142,6 +142,54 @@ router.post("/users/:id/edit", ensureAdmin, async (req, res) => {
   }
 });
 
+router.post("/users/:id/role", ensureAdmin, async (req, res) => {
+  try {
+    const userId = checkId(req.params.id);
+    const { role } = req.body;
+    
+    if (!role || (role !== "user" && role !== "admin")) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid role. Must be 'user' or 'admin'"
+      });
+    }
+    
+    if (userId === req.session.user._id) {
+      return res.status(400).json({
+        success: false,
+        error: "Cannot change your own role"
+      });
+    }
+    
+    const usersCollection = await users();
+    const result = await usersCollection.updateOne(
+      { _id: oid(userId) },
+      {
+        $set: {
+          role: role,
+          updatedAt: new Date()
+        }
+      }
+    );
+    
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found"
+      });
+    }
+    
+    res.json({ success: true });
+    
+  } catch (error) {
+    console.error("Change role error:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to change user role"
+    });
+  }
+});
+
 router.delete("/users/:id", ensureAdmin, async (req, res) => {
   try {
     if (req.params.id === req.session.user._id) {
