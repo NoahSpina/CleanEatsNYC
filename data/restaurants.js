@@ -54,83 +54,92 @@ let exportedMethods = {
     }
 
     let sortQuery = { name: sortDirection };
+    let sortFieldQuery = {};
     
     if (sortBy === "rating") {
       sortQuery = { latestScore: sortDirection, name: 1 };
+      // only get restaurants that actually have a score
+      sortFieldQuery.latestScore = { $exists: true, $ne: null, $type: "number" };
     } else if (sortBy === "grade") {
       sortQuery = { latestGrade: sortDirection, name: 1 };
+      // only get restaurants that have a grade
+      sortFieldQuery.latestGrade = { $exists: true, $ne: null, $ne: "" };
     } else if (sortBy === "inspectionDate") {
       sortQuery = { latestInspectionDate: sortDirection, name: 1 };
+      // only get restaurants that have an inspection date
+      sortFieldQuery.latestInspectionDate = { $exists: true, $ne: null, $ne: "" };
     }
 
     const restaurantCount = await restaurantCollection.countDocuments(query);
     let restaurantList;
 
     if (sortBy === "rating" || sortBy === "grade" || sortBy === "inspectionDate") {
-      restaurantList = await restaurantCollection
-        .find(query)
-        .toArray();
-      const withData = restaurantList.filter(r => {
-        if (sortBy === "rating") {
-          return r.latestScore !== null && r.latestScore !== undefined && typeof r.latestScore === "number";
-        }
-        if (sortBy === "grade") {
-          return r.latestGrade !== null && r.latestGrade !== undefined && r.latestGrade !== "";
-        }
-        if (sortBy === "inspectionDate") {
-          return r.latestInspectionDate !== null && r.latestInspectionDate !== undefined && r.latestInspectionDate !== "";
-        }
-        return true;
-      });
+      // get restaurants that have the data we need to sort by
+      const withDataQuery = { ...query, ...sortFieldQuery };
+      const withDataCount = await restaurantCollection.countDocuments(withDataQuery);
       
-      const withoutData = restaurantList.filter(r => {
-        if (sortBy === "rating") {
-          return r.latestScore === null || r.latestScore === undefined || typeof r.latestScore !== "number";
-        }
-        if (sortBy === "grade") {
-          return r.latestGrade === null || r.latestGrade === undefined || r.latestGrade === "";
-        }
-        if (sortBy === "inspectionDate") {
-          return r.latestInspectionDate === null || r.latestInspectionDate === undefined || r.latestInspectionDate === "";
-        }
-        return false;
-      });
-
+      // get restaurants that don't have the data (will show at the end)
+      const withoutDataQuery = { ...query };
       if (sortBy === "rating") {
-        withData.sort((a, b) => {
-          if (sortDirection === 1) {
-            return a.latestScore - b.latestScore || a.name.localeCompare(b.name);
-          } else {
-            return b.latestScore - a.latestScore || a.name.localeCompare(b.name);
-          }
-        });
+        withoutDataQuery.$or = [
+          { latestScore: { $exists: false } },
+          { latestScore: null },
+          { latestScore: { $not: { $type: "number" } } }
+        ];
       } else if (sortBy === "grade") {
-        withData.sort((a, b) => {
-          if (sortDirection === 1) {
-            return a.latestGrade.localeCompare(b.latestGrade) || a.name.localeCompare(b.name);
-          } else {
-            return b.latestGrade.localeCompare(a.latestGrade) || a.name.localeCompare(b.name);
-          }
-        });
+        withoutDataQuery.$or = [
+          { latestGrade: { $exists: false } },
+          { latestGrade: null },
+          { latestGrade: "" }
+        ];
       } else if (sortBy === "inspectionDate") {
-        withData.sort((a, b) => {
-          if (sortDirection === 1) {
-            return a.latestInspectionDate.localeCompare(b.latestInspectionDate) || a.name.localeCompare(b.name);
-          } else {
-            return b.latestInspectionDate.localeCompare(a.latestInspectionDate) || a.name.localeCompare(b.name);
-          }
-        });
+        withoutDataQuery.$or = [
+          { latestInspectionDate: { $exists: false } },
+          { latestInspectionDate: null },
+          { latestInspectionDate: "" }
+        ];
       }
       
-      withoutData.sort((a, b) => a.name.localeCompare(b.name));
-      restaurantList = [...withData, ...withoutData];
+      // if we're still looking at restaurants with data
+      if (skip < withDataCount) {
+        const remainingLimit = Math.min(limit, withDataCount - skip);
+        restaurantList = await restaurantCollection
+          .find(withDataQuery)
+          .sort(sortQuery)
+          .skip(skip)
+          .limit(remainingLimit)
+          .toArray();
+        
+        // if we need more results, grab some without data too
+        if (restaurantList.length < limit) {
+          const withoutDataList = await restaurantCollection
+            .find(withoutDataQuery)
+            .sort({ name: 1 })
+            .limit(limit - restaurantList.length)
+            .toArray();
+          restaurantList = [...restaurantList, ...withoutDataList];
+        }
+      } else {
+        // we're past the restaurants with data, so get ones without
+        const skipWithoutData = skip - withDataCount;
+        restaurantList = await restaurantCollection
+          .find(withoutDataQuery)
+          .sort({ name: 1 })
+          .skip(skipWithoutData)
+          .limit(limit)
+          .toArray();
+      }
     } else {
+      // name sort is simple, just use mongo sort
       restaurantList = await restaurantCollection
         .find(query)
         .sort(sortQuery)
+        .skip(skip)
+        .limit(limit)
         .toArray();
     }
-    const paginatedList = restaurantList.slice(skip, skip + limit);
+    
+    const paginatedList = restaurantList;
     
     return { restaurantList: paginatedList, restaurantCount };
   },
