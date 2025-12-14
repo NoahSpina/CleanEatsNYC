@@ -7,12 +7,12 @@
             <h1 class="restaurant-detail__name">
                 {{restaurant.name}}
                 <button class="restaurant-favorite {{#if restaurant.isFavorite}}favorited{{/if}}"
-                    data-id="{{restaurant._id}}"></button>
+                    data-id="{{restaurant._id}}" aria-label="Toggle Favorite"></button>
             </h1>
 
             {{#if restaurant.hasCleanStreakBadge}}
             <span class="badge badge--clean">
-                🏅 Clean streak (≤ 1 violation and A grade for last 2 inspections)
+                <span aria-hidden="true">🏅</span> Clean streak (≤ 1 violation and A grade for last 2 inspections)
             </span>
             {{/if}}
         </header>
@@ -210,12 +210,7 @@
                     {{#if ../user}}
                     <form class="comment-form" data-review="{{this._id}}">
                         <label for="comment-{{this._id}}">Add a comment</label>
-                        <textarea
-                            id="comment-{{this._id}}"
-                            name="body"
-                            rows="2"
-                            maxlength="500"
-                            required></textarea>
+                        <textarea id="comment-{{this._id}}" name="body" rows="2" maxlength="500" required></textarea>
                         <button type="submit">Post Comment</button>
                     </form>
                     {{else}}

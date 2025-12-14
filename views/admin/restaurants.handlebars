@@ -2,7 +2,7 @@
     <h1>Restaurant Management</h1>
     <br>
     <a href="/admin" class="back-button">← Back to Admin Dashboard</a>
-    
+
     <form method="GET" action="/admin/restaurants" class="admin-search-form">
         <div class="search-container">
             <label for="search">Search Restaurants:</label>
@@ -11,21 +11,24 @@
             {{#if search}}<a href="/admin/restaurants" class="btn-secondary">Clear</a>{{/if}}
         </div>
     </form>
-    
+
     <div class="admin-section">
         <div class="section-header">
-            <h2>All Restaurants {{#if search}}(Search: "{{search}}"){{/if}} <span class="results-count">({{totalRestaurants}} total)</span></h2>
+            <h2>All Restaurants {{#if search}}(Search: "{{search}}"){{/if}} <span
+                    class="results-count">({{totalRestaurants}} total)</span></h2>
             <button class="btn-primary" onclick="showAddRestaurant()">Add New Restaurant</button>
         </div>
-        
+
         {{#if restaurants}}
         <nav class="pagination">
-            {{#if hasPrevPage}}<a class="page-button" href="{{buildUrl prevPage search}}">&larr; Previous</a>{{else}}<span class="page-button disabled">&larr; Previous</span>{{/if}}
+            {{#if hasPrevPage}}<a class="page-button" href="{{buildUrl prevPage search}}">&larr;
+                Previous</a>{{else}}<span class="page-button disabled">&larr; Previous</span>{{/if}}
             <span class="pagination__page-info">Page {{page}} of {{totalPages}}</span>
-            {{#if hasNextPage}}<a class="page-button" href="{{buildUrl nextPage search}}">Next &rarr;</a>{{else}}<span class="page-button disabled">Next &rarr;</span>{{/if}}
+            {{#if hasNextPage}}<a class="page-button" href="{{buildUrl nextPage search}}">Next &rarr;</a>{{else}}<span
+                class="page-button disabled">Next &rarr;</span>{{/if}}
         </nav>
         {{/if}}
-        
+
         <div class="table-container">
             {{#if restaurants}}
             <table class="admin-table">
@@ -56,15 +59,18 @@
                 </tbody>
             </table>
             {{else}}
-            <p class="no-results">{{#if search}}No restaurants found matching "{{search}}".{{else}}No restaurants found.{{/if}}</p>
+            <p class="no-results">{{#if search}}No restaurants found matching "{{search}}".{{else}}No restaurants
+                found.{{/if}}</p>
             {{/if}}
         </div>
-        
+
         {{#if restaurants}}
         <nav class="pagination">
-            {{#if hasPrevPage}}<a class="page-button" href="{{buildUrl prevPage search}}">&larr; Previous</a>{{else}}<span class="page-button disabled">&larr; Previous</span>{{/if}}
+            {{#if hasPrevPage}}<a class="page-button" href="{{buildUrl prevPage search}}">&larr;
+                Previous</a>{{else}}<span class="page-button disabled">&larr; Previous</span>{{/if}}
             <span class="pagination__page-info">Page {{page}} of {{totalPages}}</span>
-            {{#if hasNextPage}}<a class="page-button" href="{{buildUrl nextPage search}}">Next &rarr;</a>{{else}}<span class="page-button disabled">Next &rarr;</span>{{/if}}
+            {{#if hasNextPage}}<a class="page-button" href="{{buildUrl nextPage search}}">Next &rarr;</a>{{else}}<span
+                class="page-button disabled">Next &rarr;</span>{{/if}}
         </nav>
         {{/if}}
     </div>
@@ -107,7 +113,7 @@
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn-primary">Add Restaurant</button>
-                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
             </div>
         </form>
     </div>
@@ -150,7 +156,7 @@
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn-primary">Save Changes</button>
-                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
             </div>
         </form>
     </div>

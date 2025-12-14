@@ -166,8 +166,8 @@
                         {{this.name}}
                     </a>
                 </h2>
-                <button class="restaurant-favorite {{#if this.isFavorite}}favorited{{/if}}"
-                    data-id="{{this._id}}"></button>
+                <button class="restaurant-favorite {{#if this.isFavorite}}favorited{{/if}}" data-id="{{this._id}}"
+                    aria-label="Toggle Favorite"></button>
 
                 {{#if this.hasCleanStreakBadge}}
                 <span class="badge badge--clean">
@@ -202,10 +202,11 @@
     <nav class="pagination">
         {{#if hasPrevPage}}
         <a class="page-button"
-            href="{{buildUrl prevPage sort order search selectedBorough selectedCuisine selectedGrade}}">&larr;
+            href="{{buildUrl prevPage sort order search selectedBorough selectedCuisine selectedGrade}}"
+            aria-label="Previous Page">&larr;
             Previous</a>
         {{else}}
-        <span class="page-button disabled">&larr; Previous</span>
+        <span class="page-button disabled" aria-hidden="true">&larr; Previous</span>
         {{/if}}
 
         <span class="pagination__page-info">
@@ -214,9 +215,10 @@
 
         {{#if hasNextPage}}
         <a class="page-button"
-            href="{{buildUrl nextPage sort order search selectedBorough selectedCuisine selectedGrade}}">Next &rarr;</a>
+            href="{{buildUrl nextPage sort order search selectedBorough selectedCuisine selectedGrade}}"
+            aria-label="Next Page">Next &rarr;</a>
         {{else}}
-        <span class="page-button disabled">Next &rarr;</span>
+        <span class="page-button disabled" aria-hidden="true">Next &rarr;</span>
         {{/if}}
     </nav>
     {{else}}
@@ -235,7 +237,7 @@
                 const isOpen = accordion.open;
                 input.value = isOpen ? 'true' : '';
 
-                // Update URL without reloading so back/reload works correctly
+                // update URL without reloading so back/reload works correctly
                 const currentUrl = new URL(window.location.href);
                 if (isOpen) {
                     currentUrl.searchParams.set('open', 'true');

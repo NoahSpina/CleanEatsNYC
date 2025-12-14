@@ -2,10 +2,10 @@
     <h1>User Management</h1>
     <br>
     <a href="/admin" class="back-button">← Back to Admin Dashboard</a>
-    
+
     <div class="admin-section">
         <h2>All Users</h2>
-        
+
         <div class="table-container">
             <table class="admin-table">
                 <thead>
@@ -29,7 +29,7 @@
                         <td>
                             <button class="btn-edit" onclick="editUser('{{this._id}}')">Edit</button>
                             {{#unless (eq this.role "admin")}}
-                                <button class="btn-delete" onclick="deleteUser('{{this._id}}')">Delete</button>
+                            <button class="btn-delete" onclick="deleteUser('{{this._id}}')">Delete</button>
                             {{/unless}}
                         </td>
                     </tr>
@@ -59,7 +59,7 @@
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn-primary">Save Changes</button>
-                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
             </div>
         </form>
     </div>

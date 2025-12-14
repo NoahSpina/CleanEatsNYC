@@ -328,7 +328,7 @@ async function loadCommentAnalytics() {
         }
 
         if (commentsOverTime.length > 0) {
-            html += '<h4>Comments Over Time</h4>';
+            html += '<h3>Comments Over Time</h3>';
             html += '<div class="chart-item" style="height: 400px;"><canvas id="commentsOverTimeChart"></canvas></div>';
         }
 
