@@ -1,18 +1,22 @@
-// Analytics Dashboard
-let charts = { yearly: null, common: null, score: null };
+let charts = { yearly: null, common: null, score: null, borough: null, cuisine: null, comments: null };
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadRatingsAnalytics();
+    loadRatingsBreakdown();
     loadViolationAnalytics();
-    document.getElementById('applyFilters')?.addEventListener('click', loadRatingsAnalytics);
+    loadCommentAnalytics();
+    
+    document.getElementById('applyFilters')?.addEventListener('click', () => {
+        loadRatingsAnalytics();
+        loadRatingsBreakdown();
+        loadViolationAnalytics();
+        loadCommentAnalytics();
+    });
 });
 
-// Load ratings data
 async function loadRatingsAnalytics() {
     try {
         showLoading('ratingsTableContainer', 'Loading ratings...');
-
         const borough = document.getElementById('boroughFilter')?.value || '';
         const cuisine = document.getElementById('cuisineFilter')?.value || '';
         const params = new URLSearchParams();
@@ -21,15 +25,13 @@ async function loadRatingsAnalytics() {
 
         const res = await fetch(`/analytics/ratings?${params}`);
         const result = await res.json();
-
         if (!result.success) throw new Error(result.error || 'Failed to load ratings');
 
         populateFilters(result.filters);
-        
         if (result.hasData && result.data.length > 0) {
             createRatingsTable(result.data);
         } else {
-            showMessage('ratingsTableContainer', 'No ratings data available.');
+            showMessage('ratingsTableContainer', 'No ratings data available for selected filters.');
         }
     } catch (error) {
         console.error('Ratings error:', error);
@@ -37,28 +39,39 @@ async function loadRatingsAnalytics() {
     }
 }
 
-// Load violation data
 async function loadViolationAnalytics() {
     try {
         showLoading('gradeTrendContainer', 'Loading violations...');
+        const borough = document.getElementById('boroughFilter')?.value || '';
+        const cuisine = document.getElementById('cuisineFilter')?.value || '';
+        const params = new URLSearchParams();
+        if (borough) params.append('borough', borough);
+        if (cuisine) params.append('cuisine', cuisine);
 
-        const res = await fetch('/analytics/violations');
+        const res = await fetch(`/analytics/violations?${params}`);
         const result = await res.json();
-
         if (!result.success) throw new Error(result.error || 'Failed to load violations');
 
         const { yearlyViolations, commonViolations, scoreTrend, gradeTrend } = result.data;
-        createChart('yearlyViolationsChart', 'line', yearlyViolations.map(d => d.year), yearlyViolations.map(d => d.violations), 'Total Violations', '#e74c3c', 'yearly');
-        createChart('commonViolationsChart', 'bar', commonViolations.map(d => d.code), commonViolations.map(d => d.count), 'Violations', '#e67e22', 'common', true);
-        createScoreChart(scoreTrend);
-        createGradeTrend(gradeTrend);
+        
+        if (yearlyViolations.length > 0) {
+            createChart('yearlyViolationsChart', 'line', yearlyViolations.map(d => d.year), yearlyViolations.map(d => d.violations), 'Total Violations', '#e74c3c', 'yearly');
+        }
+        if (commonViolations.length > 0) {
+            createChart('commonViolationsChart', 'bar', commonViolations.map(d => d.code), commonViolations.map(d => d.count), 'Violations', '#e67e22', 'common', true);
+        }
+        if (scoreTrend.length > 0) {
+            createScoreChart(scoreTrend);
+        }
+        if (gradeTrend.length > 0) {
+            createGradeTrend(gradeTrend);
+        }
     } catch (error) {
         console.error('Violations error:', error);
         showMessage('gradeTrendContainer', 'Failed to load violations: ' + error.message, 'error');
     }
 }
 
-// Populate filter dropdowns
 function populateFilters(filters) {
     const boroughSelect = document.getElementById('boroughFilter');
     const cuisineSelect = document.getElementById('cuisineFilter');
@@ -80,7 +93,6 @@ function populateFilters(filters) {
     }
 }
 
-// Create ratings table
 function createRatingsTable(data) {
     const container = document.getElementById('ratingsTableContainer');
     if (!container) return;
@@ -105,12 +117,15 @@ function createRatingsTable(data) {
     container.innerHTML = html;
 }
 
-// Create chart
-function createChart(id, type, labels, data, label, color, chartKey, horizontal = false) {
+function createChart(id, type, labels, data, label, color, chartKey, horizontal = false, isRatingChart = false) {
     const ctx = document.getElementById(id);
-    if (!ctx) return;
+    if (!ctx || !data || data.length === 0) return;
 
     if (charts[chartKey]) charts[chartKey].destroy();
+
+    const isBarChart = type === 'bar';
+    const maxValue = Math.max(...data.filter(d => typeof d === 'number'), isRatingChart ? 5 : undefined);
+    const numericData = data.map(d => typeof d === 'number' ? d : parseFloat(d) || 0);
 
     charts[chartKey] = new Chart(ctx, {
         type,
@@ -118,24 +133,54 @@ function createChart(id, type, labels, data, label, color, chartKey, horizontal 
             labels,
             datasets: [{
                 label,
-                data,
+                data: numericData,
                 borderColor: color,
-                backgroundColor: type === 'line' ? `${color}33` : color,
-                borderWidth: type === 'line' ? 2 : 1,
-                fill: type === 'line'
+                backgroundColor: isBarChart ? color : `${color}33`,
+                borderWidth: isBarChart ? 0 : 2,
+                fill: type === 'line',
+                borderRadius: isBarChart ? 4 : 0,
+                barThickness: horizontal ? 'flex' : undefined
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             indexAxis: horizontal ? 'y' : 'x',
-            plugins: { legend: { display: false } }
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed[horizontal ? 'x' : 'y'];
+                            return `${label}: ${typeof value === 'number' ? value.toFixed(2) : value}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                [horizontal ? 'x' : 'y']: {
+                    beginAtZero: !isRatingChart,
+                    min: isRatingChart && isBarChart ? 2.5 : undefined,
+                    max: isRatingChart && isBarChart && maxValue <= 5 ? 5 : undefined,
+                    ticks: {
+                        precision: isRatingChart ? 2 : 0,
+                        stepSize: isRatingChart ? 0.1 : undefined
+                    }
+                },
+                [horizontal ? 'y' : 'x']: {
+                    ticks: {
+                        maxRotation: horizontal ? 0 : 45,
+                        minRotation: horizontal ? 0 : 45
+                    }
+                }
+            }
         }
     });
 }
 
-// Create score trend chart
 function createScoreChart(data) {
+    if (!data || data.length === 0) return;
+    
     const yearly = {};
     data.forEach(d => {
         if (!yearly[d.year]) yearly[d.year] = { total: 0, count: 0 };
@@ -147,34 +192,34 @@ function createScoreChart(data) {
         .map(year => ({ year: +year, avg: yearly[year].total / yearly[year].count }))
         .sort((a, b) => a.year - b.year);
 
-    createChart('scoreTrendChart', 'line', chartData.map(d => d.year), chartData.map(d => d.avg), 'Avg Score', '#9b59b6', 'score');
+    if (chartData.length > 0) {
+        createChart('scoreTrendChart', 'line', chartData.map(d => d.year), chartData.map(d => d.avg), 'Avg Score', '#9b59b6', 'score');
+    }
 }
 
-// Create grade trend display
 function createGradeTrend(data) {
     const container = document.getElementById('gradeTrendContainer');
-    if (!container) return;
-
-    if (data.length === 0) {
-        container.innerHTML = '<p>No grade trend data.</p>';
+    if (!container || data.length === 0) {
+        if (container) container.innerHTML = '<p class="no-data-message">No grade trend data available for selected filters.</p>';
         return;
     }
 
-    let html = '<div style="display: flex; gap: 1rem; flex-wrap: wrap;">';
-    data.forEach(d => {
-        html += `<div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 1rem; min-width: 150px; text-align: center;">`;
-        html += `<h4>${d.year}</h4><p style="font-size: 0.9rem; color: #666;">Total: ${d.total}</p>`;
-        html += `<div style="display: flex; justify-content: space-around; margin-top: 0.5rem;">`;
-        html += `<span class="grade-badge grade-a">A: ${d.grades.A}%</span>`;
-        html += `<span class="grade-badge grade-b">B: ${d.grades.B}%</span>`;
-        html += `<span class="grade-badge grade-c">C: ${d.grades.C}%</span>`;
+    const sortedData = [...data].sort((a, b) => b.year - a.year);
+    let html = '<div class="grade-trend-grid">';
+    sortedData.forEach(d => {
+        html += `<div class="grade-trend-card">`;
+        html += `<div class="grade-trend-year">${d.year}</div>`;
+        html += `<div class="grade-trend-total">Total: ${d.total.toLocaleString()}</div>`;
+        html += `<div class="grade-trend-badges">`;
+        html += `<span class="grade-badge grade-a">A: ${d.grades.A || 0}%</span>`;
+        html += `<span class="grade-badge grade-b">B: ${d.grades.B || 0}%</span>`;
+        html += `<span class="grade-badge grade-c">C: ${d.grades.C || 0}%</span>`;
         html += `</div></div>`;
     });
     html += '</div>';
     container.innerHTML = html;
 }
 
-// Helpers
 function getRatingClass(rating) {
     if (rating >= 4.5) return 'rating-excellent';
     if (rating >= 3.5) return 'rating-good';
@@ -197,4 +242,125 @@ function showLoading(id, msg) {
 function showMessage(id, msg, type = 'info') {
     const el = document.getElementById(id);
     if (el) el.innerHTML = `<div class="${type === 'error' ? 'error-message' : 'no-data-message'}">${esc(msg)}</div>`;
+}
+
+async function loadRatingsBreakdown() {
+    try {
+        const borough = document.getElementById('boroughFilter')?.value || '';
+        const cuisine = document.getElementById('cuisineFilter')?.value || '';
+        const params = new URLSearchParams();
+        if (borough) params.append('borough', borough);
+        if (cuisine) params.append('cuisine', cuisine);
+
+        const res = await fetch(`/analytics/ratings-breakdown?${params}`);
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || 'Failed to load breakdown');
+
+        const { byBorough, byCuisine } = result.data;
+        const boroughContainer = document.querySelector('#boroughRatingsChart')?.parentElement || document.querySelector('.breakdown-grid')?.children[0];
+        const cuisineContainer = document.querySelector('#cuisineRatingsChart')?.parentElement || document.querySelector('.breakdown-grid')?.children[1];
+
+        if (byBorough && byBorough.length > 0) {
+            if (!document.getElementById('boroughRatingsChart') && boroughContainer) {
+                boroughContainer.innerHTML = '<h4>Average Rating by Borough</h4><canvas id="boroughRatingsChart"></canvas>';
+            }
+            setTimeout(() => {
+                const ctx = document.getElementById('boroughRatingsChart');
+                if (ctx) createChart('boroughRatingsChart', 'bar', byBorough.map(d => d.borough), byBorough.map(d => d.avgRating), 'Average Rating', '#3498db', 'borough', true, true);
+            }, 100);
+        } else if (boroughContainer) {
+            boroughContainer.innerHTML = '<h4>Average Rating by Borough</h4><p class="no-data-message">No borough data available.</p>';
+        }
+
+        if (byCuisine && byCuisine.length > 0) {
+            if (!document.getElementById('cuisineRatingsChart') && cuisineContainer) {
+                cuisineContainer.innerHTML = '<h4>Average Rating by Cuisine (Top 15)</h4><canvas id="cuisineRatingsChart"></canvas>';
+            }
+            setTimeout(() => {
+                const ctx = document.getElementById('cuisineRatingsChart');
+                if (ctx) createChart('cuisineRatingsChart', 'bar', byCuisine.map(d => d.cuisine), byCuisine.map(d => d.avgRating), 'Average Rating', '#9b59b6', 'cuisine', true, true);
+            }, 150);
+        } else if (cuisineContainer) {
+            cuisineContainer.innerHTML = '<h4>Average Rating by Cuisine (Top 15)</h4><p class="no-data-message">No cuisine data available.</p>';
+        }
+    } catch (error) {
+        console.error('Breakdown error:', error);
+        const boroughContainer = document.querySelector('#boroughRatingsChart')?.parentElement || document.querySelector('.breakdown-grid')?.children[0];
+        const cuisineContainer = document.querySelector('#cuisineRatingsChart')?.parentElement || document.querySelector('.breakdown-grid')?.children[1];
+        if (boroughContainer) boroughContainer.innerHTML = '<h4>Average Rating by Borough</h4><p class="error-message">Failed to load borough data.</p>';
+        if (cuisineContainer) cuisineContainer.innerHTML = '<h4>Average Rating by Cuisine (Top 15)</h4><p class="error-message">Failed to load cuisine data.</p>';
+    }
+}
+
+async function loadCommentAnalytics() {
+    try {
+        const container = document.getElementById('commentsContainer');
+        if (!container) return;
+
+        const borough = document.getElementById('boroughFilter')?.value || '';
+        const cuisine = document.getElementById('cuisineFilter')?.value || '';
+        const params = new URLSearchParams();
+        if (borough) params.append('borough', borough);
+        if (cuisine) params.append('cuisine', cuisine);
+
+        const res = await fetch(`/analytics/comments?${params}`);
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Server returned non-JSON response');
+        }
+        
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || 'Failed to load comments');
+
+        const totalComments = result.data?.totalComments || 0;
+        if (totalComments === 0) {
+            container.innerHTML = '<p class="no-data-message">No comment data available yet.</p>';
+            return;
+        }
+
+        const { commentsPerReview, commentsOverTime } = result.data || {};
+        let html = '<div class="comments-stats">';
+        html += `<p><strong>Total Comments:</strong> ${totalComments.toLocaleString()}</p>`;
+        
+        if (commentsPerReview) {
+            html += `<p><strong>Average Comments per Review:</strong> ${commentsPerReview.avg.toFixed(2)}</p>`;
+            html += `<p><strong>Max Comments on a Review:</strong> ${commentsPerReview.max}</p>`;
+        }
+
+        if (commentsOverTime.length > 0) {
+            html += '<h4>Comments Over Time</h4>';
+            html += '<div class="chart-item" style="height: 400px;"><canvas id="commentsOverTimeChart"></canvas></div>';
+        }
+
+        html += '</div>';
+        
+        if (charts.comments) {
+            charts.comments.destroy();
+            delete charts.comments;
+        }
+        
+        container.innerHTML = html;
+
+        if (commentsOverTime.length > 0) {
+            const yearly = {};
+            commentsOverTime.forEach(d => {
+                if (!yearly[d.year]) yearly[d.year] = 0;
+                yearly[d.year] += d.count;
+            });
+
+            const chartData = Object.keys(yearly)
+                .map(year => ({ year: +year, count: yearly[year] }))
+                .sort((a, b) => a.year - b.year);
+
+            setTimeout(() => {
+                const canvas = document.getElementById('commentsOverTimeChart');
+                if (canvas) {
+                    createChart('commentsOverTimeChart', 'line', chartData.map(d => d.year), chartData.map(d => d.count), 'Comments', '#e74c3c', 'comments');
+                }
+            }, 150);
+        }
+    } catch (error) {
+        console.error('Comments error:', error);
+        showMessage('commentsContainer', 'Failed to load comment analytics: ' + error.message, 'error');
+    }
 }

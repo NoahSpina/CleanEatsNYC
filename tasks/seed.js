@@ -1,5 +1,5 @@
 import { dbConnection, closeConnection } from "../config/mongoConnection.js";
-import { restaurants, inspections, reviews, users } from "../config/mongoCollections.js";
+import { restaurants, inspections, reviews, users, comments } from "../config/mongoCollections.js";
 import fs from "fs";
 import csv from "csv-parser";
 import { normalizeString, toDateorNull } from "../helpers/validation.js";
@@ -215,9 +215,10 @@ for (const restaurant of allRestaurants) {
       _id: new ObjectId(),
       restaurantId: restaurant._id,
       userId: new ObjectId(), // Dummy user ID for seed data
+      rating: rating,
       title: 'Example Review',
       body: reviewText,
-      reviewText: reviewText,
+      photos: [],
       createdAt: createdAt,
       updatedAt: createdAt,
     });
@@ -255,6 +256,61 @@ const adminUser = {
 
 await usersCollection.insertOne(adminUser);
 console.log("Admin user created: username=admin, password=admin123");
+// Add simple comments on reviews
+console.log("Adding comments on reviews...");
+const commentsCollection = await comments();
+
+// Simple comment texts
+const sampleComments = [
+  "Totally agree!",
+  "Thanks for sharing.",
+  "Same experience here.",
+  "Good to know.",
+  "Will check it out.",
+  "Noted!",
+  "Helpful review.",
+  "Thanks!",
+  "Agreed.",
+  "Good point."
+];
+
+const allReviews = await reviewsCollection.find({}).toArray();
+const commentDocs = [];
+
+// Add 1-3 comments per review (randomly)
+for (const review of allReviews) {
+  const numComments = Math.floor(Math.random() * 3) + 1; // 1 to 3 comments
+  
+  for (let i = 0; i < numComments; i++) {
+    const commentText = sampleComments[Math.floor(Math.random() * sampleComments.length)];
+    
+    // Random date after review was created
+    const reviewDate = review.createdAt;
+    const now = new Date();
+    const randomTime = reviewDate.getTime() + Math.random() * (now.getTime() - reviewDate.getTime());
+    const createdAt = new Date(randomTime);
+    
+    commentDocs.push({
+      _id: new ObjectId(),
+      reviewId: review._id,
+      userId: new ObjectId(), // Dummy user ID
+      body: commentText,
+      createdAt: createdAt,
+      updatedAt: createdAt
+    });
+  }
+}
+
+if (commentDocs.length > 0) {
+  // Insert comments in batches
+  const batchSize = 1000;
+  for (let i = 0; i < commentDocs.length; i += batchSize) {
+    const batch = commentDocs.slice(i, i + batchSize);
+    await commentsCollection.insertMany(batch);
+    console.log(`Inserted ${Math.min(i + batchSize, commentDocs.length)} of ${commentDocs.length} comments...`);
+  }
+  console.log(`Added ${commentDocs.length} comments on reviews.`);
+}
 
 console.log("Seeding completed!");
 await closeConnection();
