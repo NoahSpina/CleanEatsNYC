@@ -4,6 +4,7 @@ import { checkId } from "../helpers/validation.js";
 import inspectionData from "../data/inspections.js";
 import userData from "../data/users.js";
 import images from "../middleware/images.js";
+import xss from "xss";
 
 const router = Router();
 
@@ -29,13 +30,13 @@ router.route("/restaurants").get(async (req, res) => {
 
     let search = "";
     if (req.query.search) {
-      search = req.query.search;
+      search = xss(req.query.search);
     }
 
     const filters = {};
-    if (req.query.borough) filters.borough = req.query.borough;
-    if (req.query.cuisine) filters.cuisine = req.query.cuisine;
-    if (req.query.grade) filters.grade = req.query.grade;
+    if (req.query.borough) filters.borough = xss(req.query.borough);
+    if (req.query.cuisine) filters.cuisine = xss(req.query.cuisine);
+    if (req.query.grade) filters.grade = xss(req.query.grade);
     
     // favorites filter
     let favoritesOnly = false;
@@ -57,7 +58,7 @@ router.route("/restaurants").get(async (req, res) => {
       await restaurantData.getRestaurantsOnPage(page, limit, sort, order, search, filters);
 
     // checks for favorites
-    if (req.session.user.favorites) {
+    if (req.session.user && req.session.user.favorites) {
       const userFavorites = req.session.user.favorites.map(id => id.toString());
       restaurantList.forEach(restaurant => {
         restaurant.isFavorite = userFavorites.includes(restaurant._id.toString());
@@ -67,9 +68,11 @@ router.route("/restaurants").get(async (req, res) => {
     const totalPages = Math.ceil(restaurantCount / limit);
 
     const buildUrl = (newPage, newSort, newOrder, newSearch) => {
+      newSearch = newSearch ? xss(newSearch) : newSearch;
+      newSort = newSort ? xss(newSort) : newSort;
+      newOrder = newOrder ? xss(newOrder) : newOrder;
       let url = "/restaurants";
       const params = [];
-      
       if (newPage > 1) {
         params.push("page=" + newPage);
       }
@@ -138,7 +141,7 @@ router.route("/restaurants").get(async (req, res) => {
 });
 
 router.route("/restaurants/:id").get(async (req, res) => {
-  let id = req.params.id;
+  let id = xss(req.params.id);
 
   try {
     id = checkId(id);
@@ -184,17 +187,20 @@ router.route("/restaurants/:id").post(images.array("photos"), async (req, res) =
       error: "You must be logged in to submit a review."
     });
   }
-  let restaurantId = req.params.id;
+  let restaurantId = xss(req.params.id);
 
   try {
     restaurantId = checkId(restaurantId);
     const userId = req.session.user._id;
-    const { rating, title, body, photoDescriptions = "" } = req.body;
+    let { rating, title, body, photoDescriptions = "" } = req.body;
+    title = xss(title);
+    body = xss(body);
+    photoDescriptions = photoDescriptions ? xss(photoDescriptions) : "";
     let photos = [];
     if (req.files && req.files.length > 0) {
       let altTexts = [];
       if (photoDescriptions && photoDescriptions.trim().length > 0) {
-          altTexts = photoDescriptions.split("\n").map((text) => text.trim()).filter((text) => text.length > 0);
+          altTexts = photoDescriptions.split("\n").map((text) => xss(text.trim())).filter((text) => text.length > 0);
       }
       photos = req.files.map((file, index) => ({
         url: `/uploads/${file.filename}`,
@@ -210,7 +216,7 @@ router.route("/restaurants/:id").post(images.array("photos"), async (req, res) =
     const restaurant = await restaurantData.getRestaurantById(restaurantId);
     const reviews = await restaurantData.getAllReviewsForRestaurant(restaurantId);
     return res.status(400).render("restaurants/restaurantsId", {
-        title: restaurant.name,
+        title: xss(restaurant.name),
         restaurant,
         reviews,
         user: req.session.user,
