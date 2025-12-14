@@ -20,6 +20,9 @@
                 <a href="/restaurants" class="nav-link">Restaurants</a>
                 <a href="/analytics" class="nav-link">Analytics</a>
                 <a href="/profile" class="nav-link">Profile</a>
+                {{#if (eq user.role "admin")}}
+                        <a href="/admin" class="nav-link">Admin</a>
+                    {{/if}}
                 <a href="/logout" class="nav-link">Logout</a>
                 {{else}}
                 <a href="/login" class="nav-link">Login</a>

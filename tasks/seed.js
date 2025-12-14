@@ -1,10 +1,11 @@
 import { dbConnection, closeConnection } from "../config/mongoConnection.js";
-import { restaurants, inspections, reviews, comments } from "../config/mongoCollections.js";
+import { restaurants, inspections, reviews, users, comments } from "../config/mongoCollections.js";
 import fs from "fs";
 import csv from "csv-parser";
 import { normalizeString, toDateorNull } from "../helpers/validation.js";
 import { ObjectId } from "mongodb";
 import { inspectionKey } from "../helpers/seeding.js";
+import bcrypt from "bcrypt";
 
 const db = await dbConnection();
 console.log("Dropping existing database...");
@@ -235,6 +236,26 @@ if (reviewDocs.length > 0) {
   console.log(`Added ${reviewDocs.length} reviews for ${allRestaurants.length} restaurants.`);
 }
 
+// Create admin user
+console.log("Creating admin user");
+const usersCollection = await users();
+
+const adminPassword = await bcrypt.hash("admin123", 12);
+const adminUser = {
+  _id: new ObjectId(),
+  role: "admin",
+  username: "admin",
+  email: "admin@cleaneats.com",
+  displayName: "Admin User",
+  hashedPassword: adminPassword,
+  favorites: [],
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  lastLoginAt: null,
+};
+
+await usersCollection.insertOne(adminUser);
+console.log("Admin user created: username=admin, password=admin123");
 // Add simple comments on reviews
 console.log("Adding comments on reviews...");
 const commentsCollection = await comments();
