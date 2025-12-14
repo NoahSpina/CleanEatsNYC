@@ -30,7 +30,8 @@
     <br>
     <h2>My Reviews:</h2>
     <br>
-    <div class="reviews-list">
+    {{#if reviews.length}}
+        <div class="reviews-list">
         {{#each reviews}}
         <div class="review-card">
              <p class="resturant-title">Restaurant:<a href="/restaurants/{{this.restaurantId}}">{{this.restaurantName}}</a></p>
@@ -52,6 +53,10 @@
         <br>
         {{/each}}
     </div>
+    {{else}}
+        <p class="no-reviews">No reviews</p>
+    {{/if}}
+    
 </div>
 
 <script src="/public/js/delete-reviews.js"></script>

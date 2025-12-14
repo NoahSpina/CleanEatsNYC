@@ -1,5 +1,6 @@
 import { Router } from "express";
 import userData from "../data/users.js";
+import xss from "xss";
 
 const router = Router();
 
@@ -20,7 +21,7 @@ router.get("/register", redirectIfLoggedIn, (req, res) => {
 
 router.post("/register", async (req, res) => {
   const { username, displayName, email, password, confirmPassword } = req.body;
-
+  
   try {
     const newUser = await userData.registerUser(
       username,
@@ -32,7 +33,10 @@ router.post("/register", async (req, res) => {
     req.session.user = newUser;
     res.redirect("/");
   } catch (e) {
-    renderError(res, "register", e.message, { username, displayName, email });
+    const safeUsername = username ? xss(username) : username;
+    const safeDisplayName = displayName ? xss(displayName) : displayName;
+    const safeEmail = email ? xss(email) : email;
+    renderError(res, "register", e.message, { username: safeUsername, displayName: safeDisplayName, email: safeEmail });
   }
 });
 
@@ -48,7 +52,8 @@ router.post("/login", async (req, res) => {
     req.session.user = await userData.loginUser(emailOrUsername, password);
     res.redirect("/");
   } catch (e) {
-    renderError(res, "login", e.message, { emailOrUsername });
+    const safeEmailOrUsername = emailOrUsername ? xss(emailOrUsername) : emailOrUsername;
+    renderError(res, "login", e.message, { emailOrUsername: safeEmailOrUsername });
   }
 });
 
