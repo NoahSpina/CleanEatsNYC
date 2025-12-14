@@ -149,12 +149,22 @@ router.route("/restaurants/:id").get(async (req, res) => {
     const restaurant = await restaurantData.getRestaurantById(id);
     
     // checks if this restaurant is a user's favorite
-    if (req.session.user.favorites) {
+    if (req.session.user && req.session.user.favorites) {
       restaurant.isFavorite = req.session.user.favorites.some(favId => favId.toString() === id);
     }
 
     const inspections = await inspectionData.getInspectionsByRestaurant(id);
     const reviews = await restaurantData.getAllReviewsForRestaurant(id);
+
+    for (let review of reviews) {
+      review.comments = await userData.getCommentsForReview(review._id);
+
+      review.comments = review.comments.map((comment) => ({
+        ...comment,
+        canDelete:
+          req.session.user && (comment.userId === req.session.user._id || req.session.user.role === "admin")
+      }));
+    }
 
     let userHasReviewed = false;
     if (req.session.user) {

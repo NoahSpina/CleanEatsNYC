@@ -182,6 +182,46 @@
                     {{/each}}
                 </div>
                 {{/if}}
+                <section class="review-comments">
+                    <br>
+                    <h4>Comments</h4>
+                    <br>
+                    {{#if this.comments.length}}
+                    <ul class="comment-list">
+                        {{#each this.comments}}
+                        <li class="comment-item">
+                            <p class="comment-meta">
+                                <strong>{{this.userDisplayName}}</strong>:
+                                <span class="comment-date">{{this.createdAt}}</span>
+                            </p>
+                            <p class="comment-body">{{this.body}}</p>
+                            {{#if this.canDelete}}
+                            <button class="delete-comment-btn" data-comment="{{this._id}}">
+                                Delete
+                            </button>
+                            {{/if}}
+                        </li>
+                        {{/each}}
+                    </ul>
+                    {{else}}
+                    <p>No comments yet.</p>
+                    {{/if}}
+                    <br>
+                    {{#if ../user}}
+                    <form class="comment-form" data-review="{{this._id}}">
+                        <label for="comment-{{this._id}}">Add a comment</label>
+                        <textarea
+                            id="comment-{{this._id}}"
+                            name="body"
+                            rows="2"
+                            maxlength="500"
+                            required></textarea>
+                        <button type="submit">Post Comment</button>
+                    </form>
+                    {{else}}
+                    <p><a href="/login">Sign in</a> to comment.</p>
+                    {{/if}}
+                </section>
             </article>
             {{/each}}
             {{else}}
@@ -194,5 +234,5 @@
 <p>Restaurant not found.</p>
 {{/if}}
 
-
+<script src="/public/js/comment_form.js" defer></script>
 <script src="/public/js/review-validation.js" defer></script>

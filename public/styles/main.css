@@ -1309,3 +1309,18 @@ body {
 .form-actions .btn-secondary {
   margin-left: 0.5rem;
 }
+
+.comment-date {
+  color: gray;
+  font-size: small;
+}
+
+.comment-list {
+    list-style: none; 
+    padding: 0;      
+    margin: 0;     
+}
+
+.comment-item {
+    margin-bottom: 1rem;
+}

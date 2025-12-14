@@ -96,5 +96,41 @@ router.get("/users/:id", async (req, res) => {
   }
 });
 
+router.post("/comment/:reviewId", requireAuth, async (req, res) => {
+  try {
+    const reviewId = xss(req.params.reviewId);
+    const body = xss(req.body.body);
+
+    if (!body || body.trim().length === 0) {
+      throw new Error("Comment cannot be empty");
+    }
+
+    await userData.addComment(
+      req.session.user._id,
+      reviewId,
+      body
+    );
+
+    res.json({ success: true });
+  } catch (e) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+});
+
+router.delete("/comment/:commentId", requireAuth, async (req, res) => {
+  try {
+    const commentId = xss(req.params.commentId);
+
+    await userData.deleteComment(
+      req.session.user._id,
+      commentId
+    );
+
+    res.json({ success: true });
+  } catch (e) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+});
+
 export default router;
 
