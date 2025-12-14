@@ -3,6 +3,7 @@ import { users, restaurants } from "../config/mongoCollections.js";
 import { checkAndTrimString, checkEmail, checkId } from "../helpers/validation.js";
 import { ObjectId } from "mongodb";
 import restaurantData from "../data/restaurants.js";
+import xss from "xss";
 
 const router = Router();
 
@@ -20,13 +21,14 @@ const ensureAdmin = (req, res, next) => {
 };
 
 const restaurantFields = ({ name, borough, cuisine, building, street, zipcode }) => ({
-  name: checkAndTrimString(name, "restaurant name"),
-  borough: checkAndTrimString(borough, "borough").toLowerCase(),
-  cuisine: checkAndTrimString(cuisine, "cuisine"),
-  "address.building": checkAndTrimString(building, "building"),
-  "address.street": checkAndTrimString(street, "street"),
-  "address.zipcode": checkAndTrimString(zipcode, "zipcode"),
+  name: checkAndTrimString(xss(name), "restaurant name"),
+  borough: checkAndTrimString(xss(borough), "borough").toLowerCase(),
+  cuisine: checkAndTrimString(xss(cuisine), "cuisine"),
+  "address.building": checkAndTrimString(xss(building), "building"),
+  "address.street": checkAndTrimString(xss(street), "street"),
+  "address.zipcode": checkAndTrimString(xss(zipcode), "zipcode"),
 });
+
 
 router.get("/", ensureAdmin, (req, res) =>
   res.render("admin/dashboard", {
@@ -106,9 +108,9 @@ router.post("/users/:id/edit", ensureAdmin, async (req, res) => {
     const _id = oid(req.params.id);
     const usersCol = await users();
 
-    const username = checkAndTrimString(req.body.username, "username");
-    const displayName = checkAndTrimString(req.body.displayName, "display name");
-    const email = checkEmail(req.body.email);
+    const username = checkAndTrimString(xss(req.body.username), "username");
+    const displayName = checkAndTrimString(xss(req.body.displayName), "display name");
+    const email = checkEmail(xss(req.body.email));
 
     const duplicate = await usersCol.findOne({
       _id: { $ne: _id },

@@ -1,6 +1,6 @@
 import restaurantData from "../data/restaurants.js";
 import { Router } from "express";
-import { checkId } from "../helpers/validation.js";
+import { checkId, checkRating, checkAndTrimString } from "../helpers/validation.js";
 import inspectionData from "../data/inspections.js";
 import userData from "../data/users.js";
 import images from "../middleware/images.js";
@@ -203,9 +203,15 @@ router.route("/restaurants/:id").post(images.array("photos"), async (req, res) =
     restaurantId = checkId(restaurantId);
     const userId = req.session.user._id;
     let { rating, title, body, photoDescriptions = "" } = req.body;
+
     title = xss(title);
     body = xss(body);
     photoDescriptions = photoDescriptions ? xss(photoDescriptions) : "";
+
+    rating = checkRating(rating);
+    title = checkAndTrimString(title, "Title");
+    body = checkAndTrimString(body, "Review body");
+    
     let photos = [];
     if (req.files && req.files.length > 0) {
       let altTexts = [];

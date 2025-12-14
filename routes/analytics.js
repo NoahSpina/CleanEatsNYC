@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { restaurants, inspections, reviews, comments } from "../config/mongoCollections.js";
 import { checkAndTrimString } from "../helpers/validation.js";
+import xss from "xss";
 
 const router = Router();
 
@@ -20,7 +21,8 @@ router.get("/", ensureAuthenticated, (req, res) => {
 
 router.get("/ratings", ensureAuthenticated, async (req, res) => {
   try {
-    const { borough, cuisine } = req.query;
+    const borough = req.query.borough ? xss(req.query.borough) : req.query.borough;
+    const cuisine = req.query.cuisine ? xss(req.query.cuisine) : req.query.cuisine;
     const reviewsCollection = await reviews();
     const restaurantsCollection = await restaurants();
 
@@ -110,7 +112,8 @@ router.get("/ratings", ensureAuthenticated, async (req, res) => {
 
 router.get("/ratings-breakdown", ensureAuthenticated, async (req, res) => {
   try {
-    const { borough, cuisine } = req.query;
+    const borough = req.query.borough ? xss(req.query.borough) : req.query.borough;
+    const cuisine = req.query.cuisine ? xss(req.query.cuisine) : req.query.cuisine;
     const reviewsCollection = await reviews();
     const filter = {};
     if (borough?.trim()) filter["restaurant.borough"] = checkAndTrimString(borough, "borough");
@@ -158,7 +161,8 @@ router.get("/ratings-breakdown", ensureAuthenticated, async (req, res) => {
 
 router.get("/violations", ensureAuthenticated, async (req, res) => {
   try {
-    const { borough, cuisine } = req.query;
+    const borough = req.query.borough ? xss(req.query.borough) : req.query.borough;
+    const cuisine = req.query.cuisine ? xss(req.query.cuisine) : req.query.cuisine;
     const inspectionsCollection = await inspections();
     const restaurantsCollection = await restaurants();
 
@@ -269,7 +273,8 @@ router.get("/comments", ensureAuthenticated, async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   
   try {
-    const { borough, cuisine } = req.query;
+    const borough = req.query.borough ? xss(req.query.borough) : req.query.borough;
+    const cuisine = req.query.cuisine ? xss(req.query.cuisine) : req.query.cuisine;
     const restaurantsCollection = await restaurants();
     const reviewsCollection = await reviews();
     

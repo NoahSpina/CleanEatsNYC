@@ -2,6 +2,7 @@ import { Router } from "express";
 import userData from "../data/users.js";
 import restaurantData from "../data/restaurants.js";
 import xss from "xss";
+import { checkAndTrimString, validateDisplayName, checkEmail, checkId } from "../helpers/validation.js";
 
 const router = Router();
 
@@ -42,8 +43,14 @@ router.get("/profile/edit", requireAuth, async (req, res) => {
 router.post("/profile", requireAuth, async (req, res) => {
   try {
     const updates = {};
-    if (req.body.displayName) updates.displayName = xss(req.body.displayName);
-    if (req.body.email) updates.email = xss(req.body.email);
+    if (req.body.displayName) {
+      let displayName = xss(req.body.displayName);
+      updates.displayName = validateDisplayName(displayName);
+    }
+    if (req.body.email) {
+      let email = xss(req.body.email);
+      updates.email = checkEmail(email);
+    }
     const updatedUser = await userData.updateUserProfile(req.session.user._id, updates);
     req.session.user = updatedUser;
     res.redirect("/profile");
@@ -98,8 +105,11 @@ router.get("/users/:id", async (req, res) => {
 
 router.post("/comment/:reviewId", requireAuth, async (req, res) => {
   try {
-    const reviewId = xss(req.params.reviewId);
-    const body = xss(req.body.body);
+    let reviewId = xss(req.params.reviewId);
+    let body = xss(req.body.body);
+
+    reviewId = checkId(reviewId);
+    body = checkAndTrimString(body, "comment");
 
     if (!body || body.trim().length === 0) {
       throw new Error("Comment cannot be empty");
