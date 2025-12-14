@@ -1,5 +1,6 @@
 import { users } from "../config/mongoCollections.js";
 import { reviews } from "../config/mongoCollections.js";
+import { comments } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
 import {
   checkAndTrimString,
@@ -475,6 +476,82 @@ let exportedMethods = {
     createdAt: review.createdAt,
     updatedAt: review.updatedAt
     }));
+  },
+  async addComment(userId, reviewId, body) {
+    userId = checkId(userId);
+    reviewId = checkId(reviewId);
+    body = checkAndTrimString(body, "comment");
+
+    const commentsCol = await comments();
+    const reviewsCol = await reviews();
+
+    const newComment = {
+      _id: new ObjectId(),
+      reviewId: new ObjectId(reviewId),
+      userId: new ObjectId(userId),
+      body,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    await commentsCol.insertOne(newComment);
+
+    await reviewsCol.updateOne(
+      { _id: new ObjectId(reviewId) },
+      { $push: { comments: newComment._id } }
+    );
+
+    return newComment;
+  },
+  async deleteComment(userId, commentId) {
+    userId = checkId(userId);
+    commentId = checkId(commentId);
+
+    const commentsCol = await comments();
+    const usersCol = await users();
+    const comment = await commentsCol.findOne({_id: new ObjectId(commentId)});
+    if (!comment) throw new Error("Comment not found");
+    const user = await usersCol.findOne({
+      _id: new ObjectId(userId)
+    });
+    if (!user) throw new Error("User not found");
+
+    const isOwner = comment.userId.toString() === userId;
+    const isAdmin = user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      throw new Error("You can only delete your own comments");
+    }
+
+    await commentsCol.deleteOne({ _id: new ObjectId(commentId) });
+    return true;
+  },
+  async getCommentsForReview(reviewId) {
+    reviewId = checkId(reviewId);
+
+    const commentsCol = await comments();
+    const usersCol = await users();
+
+    const commentList = await commentsCol.find({ reviewId: new ObjectId(reviewId) }).sort({ createdAt: 1 }).toArray();
+    
+    const commentsAndUser = await Promise.all(
+      commentList.map(async (comment) => {
+        const user = await usersCol.findOne(
+          { _id: new ObjectId(comment.userId) },
+          { projection: { displayName: 1 } }
+        );
+
+        return {
+          _id: comment._id.toString(),
+          body: comment.body,
+          createdAt: comment.createdAt,
+          userId: comment.userId.toString(),
+          userDisplayName: user?.displayName || "Deleted User"
+        };
+      })
+    );
+
+    return commentsAndUser;
   }
 };
 
