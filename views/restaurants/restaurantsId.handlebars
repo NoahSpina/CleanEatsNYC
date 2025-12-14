@@ -106,7 +106,7 @@
         {{#if user}}
         {{!-- https://handlebarsjs.com/guide/builtin-helpers.html#unless --}}
         {{#unless userHasReviewed}}
-        <button id="write-review-btn" class="write-review-btn">
+        <button id="write-review-btn" class="btn-primary write-review-btn">
             Write a Review
         </button>
         {{#if error}}
@@ -142,7 +142,7 @@
             <textarea id="photoDescriptions" name="photoDescriptions" rows="3"
                 placeholder="1. Resturant exterior 2. Picture of pizza"></textarea>
             <br>
-            <button class="submit-review" type="submit">Submit Review</button>
+            <button class="btn-primary submit-review" type="submit">Submit Review</button>
         </form>
         {{else}}
         <p class="reviewed">Cannot create new review. You have already reviewed this restaurant.</p>
@@ -160,6 +160,10 @@
                     <h3 class="review-title">{{this.title}}</h3>
 
                     <div class="review-meta">
+                        <span class="review-author">
+                            By: <strong>{{this.userDisplayName}}</strong>
+                        </span>
+                        <br>
                         <span class="review-rating">
                             Rating: {{this.rating}}
                         </span>
@@ -196,7 +200,7 @@
                             </p>
                             <p class="comment-body">{{this.body}}</p>
                             {{#if this.canDelete}}
-                            <button class="delete-comment-btn" data-comment="{{this._id}}">
+                            <button class="btn-delete delete-comment-btn" data-comment="{{this._id}}">
                                 Delete
                             </button>
                             {{/if}}
@@ -211,7 +215,7 @@
                     <form class="comment-form" data-review="{{this._id}}">
                         <label for="comment-{{this._id}}">Add a comment</label>
                         <textarea id="comment-{{this._id}}" name="body" rows="2" maxlength="500" required></textarea>
-                        <button type="submit">Post Comment</button>
+                        <button class="btn-primary" type="submit">Post Comment</button>
                     </form>
                     {{else}}
                     <p><a href="/login">Sign in</a> to comment.</p>

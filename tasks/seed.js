@@ -191,52 +191,67 @@ const sampleReviewTexts = [
   "Could use some improvement in service.",
 ];
 
-const allRestaurants = await restaurantsCollection.find({}).toArray();
-const reviewDocs = [];
-
-for (const restaurant of allRestaurants) {
-  // Generate 3-8 random reviews per restaurant
-  const numReviews = Math.floor(Math.random() * 6) + 3; // 3 to 8 reviews
-
-  for (let i = 0; i < numReviews; i++) {
-    // Random rating between 1 and 5
-    const rating = Math.floor(Math.random() * 5) + 1;
-
-    // Random review text
-    const reviewText = sampleReviewTexts[Math.floor(Math.random() * sampleReviewTexts.length)];
-
-    // Random date within the last 2 years
-    const now = new Date();
-    const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
-    const randomTime = twoYearsAgo.getTime() + Math.random() * (now.getTime() - twoYearsAgo.getTime());
-    const createdAt = new Date(randomTime);
-
-    reviewDocs.push({
-      _id: new ObjectId(),
-      restaurantId: restaurant._id,
-      userId: new ObjectId(), // Dummy user ID for seed data
-      rating: rating,
-      title: 'Example Review',
-      body: reviewText,
-      photos: [],
-      createdAt: createdAt,
-      updatedAt: createdAt,
-    });
+// Function to generate review titles based on rating
+function getRandomReviewTitle(rating) {
+  const excellentTitles = [
+    "Outstanding Experience!",
+    "Absolutely Amazing!",
+    "Perfect in Every Way",
+    "Best Meal Ever!",
+    "Five Stars All Around",
+    "Exceeded Expectations",
+    "Incredible Food & Service",
+    "Will Definitely Return!"
+  ];
+  
+  const goodTitles = [
+    "Really Good Food",
+    "Great Experience",
+    "Solid Choice",
+    "Worth the Visit",
+    "Pretty Good Overall",
+    "Nice Place",
+    "Good Quality Food",
+    "Enjoyed Our Meal"
+  ];
+  
+  const averageTitles = [
+    "It Was Okay",
+    "Average Experience",
+    "Nothing Special",
+    "Decent Enough",
+    "Could Be Better",
+    "Mixed Feelings",
+    "Not Bad, Not Great",
+    "Mediocre at Best"
+  ];
+  
+  const poorTitles = [
+    "Disappointing",
+    "Not Worth It",
+    "Poor Service",
+    "Expected Better",
+    "Won't Be Back",
+    "Needs Improvement",
+    "Not Impressed",
+    "Below Average"
+  ];
+  
+  let titleArray;
+  if (rating >= 4.5) {
+    titleArray = excellentTitles;
+  } else if (rating >= 3.5) {
+    titleArray = goodTitles;
+  } else if (rating >= 2.5) {
+    titleArray = averageTitles;
+  } else {
+    titleArray = poorTitles;
   }
+  
+  return titleArray[Math.floor(Math.random() * titleArray.length)];
 }
 
-if (reviewDocs.length > 0) {
-  // Insert reviews in batches to avoid memory issues
-  const batchSize = 1000;
-  for (let i = 0; i < reviewDocs.length; i += batchSize) {
-    const batch = reviewDocs.slice(i, i + batchSize);
-    await reviewsCollection.insertMany(batch);
-    console.log(`Inserted ${Math.min(i + batchSize, reviewDocs.length)} of ${reviewDocs.length} reviews...`);
-  }
-  console.log(`Added ${reviewDocs.length} reviews for ${allRestaurants.length} restaurants.`);
-}
 
-// Create admin user
 console.log("Creating admin user");
 const usersCollection = await users();
 
@@ -256,6 +271,90 @@ const adminUser = {
 
 await usersCollection.insertOne(adminUser);
 console.log("Admin user created: username=admin, password=admin123");
+
+console.log("Creating basic users...");
+const basicUsers = [];
+const userNames = [
+  { username: "john_doe", displayName: "John Doe", email: "john@example.com" },
+  { username: "jane_smith", displayName: "Jane Smith", email: "jane@example.com" },
+  { username: "mike_wilson", displayName: "Mike Wilson", email: "mike@example.com" },
+  { username: "sarah_johnson", displayName: "Sarah Johnson", email: "sarah@example.com" },
+  { username: "david_brown", displayName: "David Brown", email: "david@example.com" },
+  { username: "lisa_davis", displayName: "Lisa Davis", email: "lisa@example.com" },
+  { username: "tom_miller", displayName: "Tom Miller", email: "tom@example.com" },
+  { username: "amy_garcia", displayName: "Amy Garcia", email: "amy@example.com" },
+  { username: "chris_martinez", displayName: "Chris Martinez", email: "chris@example.com" },
+  { username: "emma_lopez", displayName: "Emma Lopez", email: "emma@example.com" }
+];
+
+const userPassword = await bcrypt.hash("password123", 12);
+
+for (const userData of userNames) {
+  const user = {
+    _id: new ObjectId(),
+    role: "user",
+    username: userData.username,
+    email: userData.email,
+    displayName: userData.displayName,
+    hashedPassword: userPassword,
+    favorites: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    lastLoginAt: null,
+  };
+  basicUsers.push(user);
+}
+
+await usersCollection.insertMany(basicUsers);
+console.log(`Created ${basicUsers.length} basic users with password: password123`);
+
+console.log("Adding random reviews for restaurants...");
+const allRestaurants = await restaurantsCollection.find({}).toArray();
+const allUsers = [...basicUsers];
+const reviewDocs = [];
+
+for (const restaurant of allRestaurants) {
+  // Generate 3-8 random reviews per restaurant
+  const numReviews = Math.floor(Math.random() * 6) + 3; // 3 to 8 reviews
+
+  for (let i = 0; i < numReviews; i++) {
+    // Random rating between 1 and 5
+    const rating = Math.floor(Math.random() * 5) + 1;
+
+    // Random review text
+    const reviewText = sampleReviewTexts[Math.floor(Math.random() * sampleReviewTexts.length)];
+
+    const randomUser = allUsers[Math.floor(Math.random() * allUsers.length)];
+
+    // Random date within the last 2 years
+    const now = new Date();
+    const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
+    const randomTime = twoYearsAgo.getTime() + Math.random() * (now.getTime() - twoYearsAgo.getTime());
+    const createdAt = new Date(randomTime);
+
+    reviewDocs.push({
+      _id: new ObjectId(),
+      restaurantId: restaurant._id,
+      userId: randomUser._id,
+      rating: rating,
+      title: getRandomReviewTitle(rating),
+      body: reviewText,
+      photos: [],
+      createdAt: createdAt,
+      updatedAt: createdAt,
+    });
+  }
+}
+
+if (reviewDocs.length > 0) {
+  // Insert reviews in batches to avoid memory issues
+  const batchSize = 1000;
+  for (let i = 0; i < reviewDocs.length; i += batchSize) {
+    const batch = reviewDocs.slice(i, i + batchSize);
+    await reviewsCollection.insertMany(batch);
+  }
+  console.log(`Added ${reviewDocs.length} reviews for ${allRestaurants.length} restaurants.`);
+}
 // Add simple comments on reviews
 console.log("Adding comments on reviews...");
 const commentsCollection = await comments();
@@ -293,7 +392,7 @@ for (const review of allReviews) {
     commentDocs.push({
       _id: new ObjectId(),
       reviewId: review._id,
-      userId: new ObjectId(), // Dummy user ID
+      userId: allUsers[Math.floor(Math.random() * allUsers.length)]._id, 
       body: commentText,
       createdAt: createdAt,
       updatedAt: createdAt
@@ -307,7 +406,6 @@ if (commentDocs.length > 0) {
   for (let i = 0; i < commentDocs.length; i += batchSize) {
     const batch = commentDocs.slice(i, i + batchSize);
     await commentsCollection.insertMany(batch);
-    console.log(`Inserted ${Math.min(i + batchSize, commentDocs.length)} of ${commentDocs.length} comments...`);
   }
   console.log(`Added ${commentDocs.length} comments on reviews.`);
 }

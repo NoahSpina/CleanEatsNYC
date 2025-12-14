@@ -415,6 +415,7 @@ let exportedMethods = {
         _id: review._id.toString(),
         restaurantId: review.restaurantId.toString(),
         userId: review.userId.toString(),
+        userDisplayName: user ? user.displayName : "Deleted User",
         rating: review.rating,
         title: review.title,
         body: review.body,
