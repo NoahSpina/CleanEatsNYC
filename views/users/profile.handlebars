@@ -15,6 +15,7 @@
             <br>
             {{#if favorites.length}}
                 <h2>My Favorites:</h2>
+                <br>
                 <ul class="favorites-list">
                     {{#each favorites}}
                         <li><a href="/restaurants/{{this._id}}" class="favorites-list">{{this.name}}</a></li>
@@ -34,7 +35,7 @@
         <div class="reviews-list">
         {{#each reviews}}
         <div class="review-card">
-             <p class="resturant-title">Restaurant:<a href="/restaurants/{{this.restaurantId}}">{{this.restaurantName}}</a></p>
+             <p class="resturant-title">Restaurant: <a href="/restaurants/{{this.restaurantId}}">{{this.restaurantName}}</a></p>
             <h3>{{this.title}} — ⭐ {{this.rating}}</h3>
             <p>{{this.body}}</p>
             {{#if this.photos.length}}
@@ -56,7 +57,18 @@
     {{else}}
         <p class="no-reviews">No reviews</p>
     {{/if}}
-    
+
+    {{#if totalPages}}
+    <div class="review-pagination">
+        {{#if prevPage}}
+            <a href="/profile?page={{prevPage}}" class="review-pagination-btn">Previous</a>
+        {{/if}}
+        <span class="review-pagination-info">Page {{currPage}} of {{totalPages}}</span>
+        {{#if hasNextPage}}
+            <a href="/profile?page={{nextPage}}" class="review-pagination-btn">Next</a>
+        {{/if}}
+    </div>
+    {{/if}}
 </div>
 
 <script src="/public/js/delete-reviews.js"></script>

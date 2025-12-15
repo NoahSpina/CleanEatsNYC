@@ -1363,3 +1363,79 @@ body {
 .comment-item {
   margin-bottom: 1rem;
 }
+
+.review-pagination {
+  padding-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.review-pagination-btn {
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  white-space: nowrap;
+  border: 1px solid #ccc; 
+  border-radius: 5px;  
+  color: #333;
+}
+
+.delete-comment-btn {
+  margin-top: 0.5rem;
+}
+
+.comment-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+.write-review-btn {
+  background-color: #0064a6;
+  color: white;
+}
+
+#photoDescriptions {
+    white-space: pre-line;
+}
+
+.profile-info p {
+    padding-bottom: 0.5rem;
+}
+
+.review-restaurant-name {
+  color: #0064a6;
+}
+
+.favorites-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.favorites-list li {
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    color: #0064a6;
+    font-weight: bolder;
+    font-size: 18px;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+}
+
+.favorites-list a {
+    text-decoration: none;
+    color: #0077cc;
+    font-weight: 500;
+}
+
+.favorites-list a:hover {
+    text-decoration: underline;
+    color: #005fa3;
+}
+
+.resturant-title a {
+  color: #005fa3;
+}

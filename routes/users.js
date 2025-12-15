@@ -25,7 +25,13 @@ router.get("/profile", requireAuth, async (req, res) => {
       const favoritePromises = user.favorites.filter(id => id).map(id => restaurantData.getRestaurantById(id.toString()));
       favorites = await Promise.all(favoritePromises);
     }
-    res.render("users/profile", { title: "My Profile", user, favorites, reviews: reviewsWithRestaurantInfo });
+    const max_reviews_per_page = 6;
+    const totalReviews = reviewsWithRestaurantInfo.length;
+    const page = Number(req.query.page) || 1;
+    const totalPages = Math.ceil(totalReviews / max_reviews_per_page);
+
+    const paginatedReviews = reviewsWithRestaurantInfo.slice( (page - 1) * max_reviews_per_page, page * max_reviews_per_page);
+    res.render("users/profile", { title: "My Profile", user, favorites, reviews: paginatedReviews, currPage: page, totalPages, hasNextPage: page < totalPages, prevPage: page - 1, nextPage: page + 1 });
   } catch (e) {
     res.status(500).render("error", { title: "Error", error: e.message, user: req.session?.user || null });
   }
