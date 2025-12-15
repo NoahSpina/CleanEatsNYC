@@ -94,7 +94,7 @@ for await (const row of stream) {
 
       const score =
         scoreStr != null && scoreStr !== "" ? Number(scoreStr) : null;
-      const grade = normalizeString(gradeStr) || null;
+      const grade = (normalizeString(gradeStr) || "").toUpperCase() || null;
 
       inspection = {
         _id: new ObjectId(),

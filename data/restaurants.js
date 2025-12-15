@@ -52,7 +52,7 @@ let exportedMethods = {
       // only shows restaurants with ids in the user.favorites array (stored in mongo)
         query._id = { $in: filterOptions.ids.map(id => new ObjectId(id)) };
     }
-
+    
     let sortQuery = { name: sortDirection };
     let sortFieldQuery = {};
     
